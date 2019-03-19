@@ -5,9 +5,24 @@
 #
 
 from sage.all import singular as _SING
+from sage.all import randint as _RAND
 from globalVars import _is_int, _CHART_LIB, _chart_num
 from ringClass import Ring as _ring
-from parseSingular import _parse_printout
+from parseSingularBasics import _parse_printout
+
+# Randomly generates an unused variable name in Singular.
+def _get_safe_var():
+    unsafe = True
+    while unsafe:
+        rand_chars = (chr(_RAND(97, 122)) for i in range(_RAND(4, 16)))
+        cat_chars = lambda x, y: x + y
+        r_var = reduce(cat_chars, rand_chars, "")
+        # We will get an error if the is *not* defined.
+        try:
+            _ = _SING.eval(r_var + ";")
+        except:
+            unsafe = False
+    return r_var
 
 
 def LoadChart(num, direc):
@@ -25,10 +40,13 @@ def LoadChart(num, direc):
     except ValueError:
         pdir = './'
 
+    # We need to find a safe variable name for our Singular run.
+    r_var = _get_safe_var()
+
     # Singular code to run.
     str_load_lib = 'LIB "' + pdir + _CHART_LIB + '";'
-    str_load_char = 'def S = load_Chart(' + str(num) + ',"' + direc + '");'
-    str_set_ring = 'setring S;'
+    str_load_char = 'def %s = load_Chart(%s, "%s");' % (r_var, num, direc)
+    str_set_ring = 'setring %s;' % (r_var)
 
     # Print statements for the user. Maybe we'll turn these off soon?
     print "Loading Singular library: \n    %s" % (pdir + _CHART_LIB)
@@ -40,14 +58,18 @@ def LoadChart(num, direc):
 
     # In Sage, the Singular run is continous, so we can make multiple calls to  
     # the same variables for example. 
+    # Currently, no error checking here. 
     _SING.lib(pdir + _CHART_LIB)
     _ = _SING.eval(str_load_char + "\n" + str_set_ring)
 
     # First we get the basics: coeff ring and vars.
-    sing_ring_printout = _SING.eval("S;")
+    sing_ring_printout = _SING.eval(r_var + ";")
     coeff, varbs = _parse_printout(sing_ring_printout)
 
     # Now we construct our ring to keep all of this data in one place.
     R = _ring(coeff, varbs)
+
+    # Clean up the Singular run
+    _ = _SING.eval("kill %s;" % (r_var))
 
     return R

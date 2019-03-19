@@ -44,3 +44,4 @@ def _parse_printout(printout):
     coeff = _parse_coeff(_attr_value(printout, "coefficients"))
     varbs = _parse_vars(_attr_value(printout, "names"))
     return (coeff, varbs)
+
