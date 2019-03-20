@@ -30,6 +30,9 @@ def _parse_coeff(str_coeff):
         return _QQ
     elif str_coeff == "ZZ":
         return _ZZ
+    elif "ZZ/" in str_coeff:
+        n = _ZZ.coerce(int(str_coeff.replace("ZZ/", "")))
+        return _ZZ.quo(n)
     else:
         raise ValueError("Unknown Singular ring.")
 
@@ -44,4 +47,3 @@ def _parse_printout(printout):
     coeff = _parse_coeff(_attr_value(printout, "coefficients"))
     varbs = _parse_vars(_attr_value(printout, "names"))
     return (coeff, varbs)
-
