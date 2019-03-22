@@ -4,6 +4,7 @@
 #   Distributed under MIT License
 #
 
+from sage.all import var as _var
 
 def _get_row_num(factors):
     row = 0 
@@ -44,9 +45,27 @@ def _expr_to_terms(exp):
     return tuple(terms)
 
 
-# COMEBACK HERE
+def _str_to_vars(factor):
+    try:
+        f = int(factor)
+    except ValueError: # if factor is not an int, we receive ValErr.
+        if not "gen(" in factor:
+            return _var(factor.replace("(", "").replace(")", ""))
+    return 1
+
+
+
 def _expr_to_tup(exp):
+    # Separate the expression into terms, then each term into factors. 
     terms = _expr_to_terms(exp)
     fact_terms = [_term_to_factors(term) for term in terms]
+
+    # This isn't the most efficient algorithm, but hopefully it's clear.
+    # We parse the data into sage values and variables. 
+    mult = lambda x, y: x*y
     n = max(_get_row_num(fact) for fact in fact_terms)
-    return n
+    t = [0 for i in range(n)]
+    for fact in fact_terms:
+        sage_fact = reduce(mult, (_str_to_vars(f) for f in fact), 1)
+        t[_get_row_num(fact) - 1] += sage_fact
+    return tuple(t)
