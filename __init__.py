@@ -5,7 +5,7 @@
 #
 
 
-__version__ = 0.1
+__version__ = 0.2
 
 print("Loading...")
 
@@ -61,9 +61,10 @@ del Zeta_ver
 # 'from foo import *' leaves hidden functions hidden and brings it up to 
 # TensorSpace instead of TensorSpace.src
 # Load interface
+from src.atlasClass import *
+from src.chartClass import *
 from src.interfaceSing import *
-from src.ringClass import *
-from src.parseEdges import * # REMOVE
+
 
 # Sage is still on python2.
 print "RSSage %s loaded." % (__version__)

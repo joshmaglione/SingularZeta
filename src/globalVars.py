@@ -6,6 +6,8 @@
 
 from sage.rings.integer import Integer as _int
 
-_CHART_LIB = "Chart_loading.lib"
 _is_int = lambda x: isinstance(x, int) or isinstance(x, _int)
-_chart_num = lambda x: "Chart" + str(x) + ".ssi"
+
+# The next vars are defined globally in case their format/ name changes.
+_CHART_LIB = "Chart_loading.lib"
+_chart_num = lambda x: "Chart" + str(x) + ".ssi" 

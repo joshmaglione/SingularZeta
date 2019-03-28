@@ -4,7 +4,7 @@
 #   Distributed under MIT License
 #
 
-class Ring():
+class Chart():
 
     def __init__(self, R, X,
         biratMap = None,    #
