@@ -16,6 +16,7 @@ _sys.dont_write_bytecode = True
 
 # Enables us to turn off printing.
 from os import devnull as _DEVNULL
+import sys as _sys
 class _HiddenPrints:
     def __enter__(self):
         self._original_stdout = _sys.stdout
@@ -62,7 +63,7 @@ del Zeta_ver
 # Load interface
 from src.interfaceSing import *
 from src.ringClass import *
-
+from src.parseEdges import * # REMOVE
 
 # Sage is still on python2.
 print "RSSage %s loaded." % (__version__)

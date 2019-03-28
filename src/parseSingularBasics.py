@@ -10,6 +10,8 @@ from sage.all import var as _var
 from parseSingularExpr import _expr_to_tup, _format_var
 
 
+# Given the Singular printout of the ring from the data set, and an attribute 
+# of the ring, return the result as a string.
 def _attr_value(printout, attr):
     start = printout.rindex(attr)
     p_out = printout[start:]

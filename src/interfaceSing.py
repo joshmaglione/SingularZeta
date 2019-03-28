@@ -17,7 +17,7 @@ def _get_safe_var():
         rand_chars = (chr(_RAND(97, 122)) for i in range(_RAND(4, 16)))
         cat_chars = lambda x, y: x + y
         r_var = reduce(cat_chars, rand_chars, "")
-        # We will get an error if the is *not* defined.
+        # We will get an error if the variable is *not* defined.
         try:
             _ = _SING.eval(r_var + ";")
         except:
@@ -99,13 +99,19 @@ def LoadChart(num, direc):
 
     # Get the Jacobian determinant
     print "Obtaining the Jacobian."
-    sing_jacobian_str = _SING.eval("jacDet;")
-    jacDet = _parse_list(sing_jacobian_str) # Do not want the wrapped version
-
+    try:
+        sing_jacobian_str = _SING.eval("jacDet;")
+        jacDet = _parse_list(sing_jacobian_str) # Do not want wrapped version
+    except:
+        jacDet = 1
+    
     # Get the last map
     print "Obtaining the last map data."
-    sing_lmap_str = _SING.eval("print(lastMap);").replace(",", "").split("\n")
-    lastmap = _parse_list_wrapped(sing_lmap_str)
+    try:
+        sing_lm_str = _SING.eval("print(lastMap);").replace(",", "").split("\n")
+        lastmap = _parse_list_wrapped(sing_lm_str)
+    except:
+        lastmap = None
 
     # Get the path
     # Waiting on a Hannover visit to learn how to read this!
