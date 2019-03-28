@@ -7,18 +7,20 @@
 class Ring():
 
     def __init__(self, R, X,
-        BO = None,          #
+        biratMap = None,    #
         cent = None,        #
-        Cone = None,        #
+        cone = None,        #
+        exDivs = None,      #
         jacDet = None,      #
         lastMap = None,     #
         path = None):       #
 
         self.coefficients = R
         self.variables = X
-        self.BO = BO
+        self.birationalMap = biratMap
         self.cent = cent
-        self.Cone = Cone
+        self.cone = cone
+        self.exDivisors = exDivs
         self.jacDet = jacDet
         self.lastMap = lastMap
         self.path = path

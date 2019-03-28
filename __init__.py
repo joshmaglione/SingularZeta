@@ -24,6 +24,8 @@ _ = _singular.eval("1 + 1;")
 # Load interface
 from src.interfaceSing import *
 from src.ringClass import *
+from src.parseSingularBasics import _parse_list as parseList #REMOVE
+from src.parseSingularExpr import _expr_to_terms as exprToTerms #REMOVE
 
 # Sage is still on python2.
 print "RSSage %s loaded." % (__version__)

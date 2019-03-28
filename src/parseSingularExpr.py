@@ -5,6 +5,8 @@
 #
 
 from sage.all import var as _var
+from sage.all import ZZ as _ZZ
+from functools import reduce
 
 def _get_row_num(factors):
     row = 0 
@@ -45,12 +47,24 @@ def _expr_to_terms(exp):
     return tuple(terms)
 
 
+# Given a string of variables, we remove the chars in "()_".
+def _format_var(str_vars):
+    return str_vars.replace("(", "").replace(")", "").replace("_", "")
+
+
+# Assumes it takes as input a pair (str, int) and it returns str^int. If the 
+# string is a constant, then a constant is returned. Otherwise, string is taken 
+# to be a variable. 
 def _str_to_vars(factor):
+    exponent = factor[1]
+    s = factor[0]
     try:
-        f = int(factor)
+        constant = _ZZ.coerce(int(s))
+        return constant**exponent
     except ValueError: # if factor is not an int, we receive ValErr.
-        if not "gen(" in factor:
-            return _var(factor.replace("(", "").replace(")", ""))
+        if not "gen(" in s:
+            varb = _var(_format_var(s))
+            return varb**exponent
     return 1
 
 
@@ -62,10 +76,23 @@ def _expr_to_tup(exp):
 
     # This isn't the most efficient algorithm, but hopefully it's clear.
     # We parse the data into sage values and variables. 
-    mult = lambda x, y: x*y
+    _mult = lambda x, y: x*y
     n = max(_get_row_num(fact) for fact in fact_terms)
-    t = [0 for i in range(n)]
+    # It is possible that n == 0, in such a case, we have a single polynomial.
+    if n == 0:
+        t = 0
+    else:
+        t = [0 for i in range(n)]
+
     for fact in fact_terms:
-        sage_fact = reduce(mult, (_str_to_vars(f) for f in fact), 1)
-        t[_get_row_num(fact) - 1] += sage_fact
-    return tuple(t)
+        vars_and_consts = [_str_to_vars(f) for f in fact] # important: keep list
+        sage_fact = reduce(_mult, vars_and_consts, 1)
+        if n == 0:
+            t += sage_fact
+        else:
+            t[_get_row_num(fact) - 1] += sage_fact
+        
+    if n == 0:
+        return t
+    else:
+        return tuple(t)
