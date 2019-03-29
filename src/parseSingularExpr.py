@@ -6,7 +6,6 @@
 
 from sage.all import var as _var
 from sage.all import ZZ as _ZZ
-from functools import reduce
 
 def _get_row_num(factors):
     row = 0 

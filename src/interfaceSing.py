@@ -34,6 +34,8 @@ def LoadChart(num, direc, verbose=False):
 
     # We need to grab the parent directory.
     # If a value error is raised, then we are in the parent dir. 
+    if direc[-1] == "/":
+        direc = direc[:-1]
     try:
         index = direc.rindex('/')
         pdir = direc[:index+1]
