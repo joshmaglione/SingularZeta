@@ -5,7 +5,7 @@
 #
 
 
-__version__ = 0.2
+__version__ = 0.3
 
 print("Loading...")
 
@@ -68,4 +68,4 @@ from src.padicIntegral import *
 
 
 # Sage is still on python2.
-print "RSSage %s loaded." % (__version__)
+print "SingularZeta %s loaded." % (__version__)
