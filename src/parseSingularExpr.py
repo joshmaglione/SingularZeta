@@ -68,7 +68,6 @@ def _str_to_vars(factor):
     return 1
 
 
-
 def _expr_to_tup(exp):
     # Separate the expression into terms, then each term into factors. 
     terms = _expr_to_terms(exp)
@@ -96,3 +95,8 @@ def _expr_to_tup(exp):
         return t
     else:
         return tuple(t)
+
+
+# Given a product of polynomials, return something...
+def _get_factors(term):
+    return term # Comeback!
