@@ -33,6 +33,7 @@ def _term_to_factors(term):
 
 # Given a Singular expression as a string, returns the tuple of strings 
 # corresponding to the terms of the expression given.
+# This assumes the expression is completely expanded, so each term is a monomial
 def _expr_to_terms(exp):
     # Treat negative terms as -1 * the term.
     # This will quickly get us a coarse splitting up.

@@ -64,6 +64,7 @@ del Zeta_ver
 from src.atlasClass import *
 from src.chartClass import *
 from src.interfaceSing import *
+from src.padicIntegral import *
 
 
 # Sage is still on python2.

@@ -49,7 +49,9 @@ class Atlas():
         self.leaves = _get_leaves(self.edges, self.number_of_charts)
 
         # Load Chart 1 as the starting chart. 
-        self.root = _load(1, direc)
+        # BUG with the following command due to jacDet not being defined.
+        # self.root = _load(1, direc)
+        self.root = _load(2, direc) # PLACEHOLDER (this may cause bugs)
 
         # Get the starting integrand.
         self.integrand = _get_integrand(self.root.variables, LT)
