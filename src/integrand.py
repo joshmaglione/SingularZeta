@@ -68,8 +68,20 @@ def _clean_integrand(integrand):
 # Given an atlas and a chart, modify the integrand for the chart according to 
 # the data. 
 def MapIntegrand(atlas, chart):
+    # Build the actual birational map
     birat_map = _get_birat_map(atlas.root.variables, chart.birationalMap)
     init_integrand = atlas.integrand
     map_it = lambda x: [birat_map(x[0]), x[1]]
+
+    # Map the initial integrand to the current with the birational map
     int_mapped = map(map_it, init_integrand) 
-    return tuple(_clean_integrand(int_mapped))
+
+    # Multiply by the Jacobian
+    if str(chart.jacDet) != "1":
+        int_jac = [[chart.jacDet, (1, 0)]]
+    else:
+        int_jac = []
+
+    # Clean it up
+    int_simplified = _clean_integrand(int_mapped + int_jac)
+    return tuple(int_simplified)

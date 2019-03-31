@@ -63,8 +63,8 @@ del Zeta_ver
 # Load interface
 from src.atlasClass import *
 from src.chartClass import *
-from src.interfaceSing import *
-from src.padicIntegral import *
+from src.integrand import *
+from src.interfaceSingular import *
 
 
 # Sage is still on python2.

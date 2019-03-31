@@ -5,7 +5,7 @@
 #
 
 from parseEdges import _parse_edges, _get_total_charts, _get_leaves
-from interfaceSing import LoadChart as _load
+from interfaceSingular import LoadChart as _load
 from sage.all import var as _var
 from sage.all import factor as _factor
 
