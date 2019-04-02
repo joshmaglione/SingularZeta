@@ -7,6 +7,7 @@
 from sage.all import var as _var
 from sage.all import ZZ as _ZZ
 
+
 def _get_row_num(factors):
     row = 0 
     for fact in factors:
@@ -95,8 +96,3 @@ def _expr_to_tup(exp):
         return t
     else:
         return tuple(t)
-
-
-# Given a product of polynomials, return something...
-def _get_factors(term):
-    return term # Comeback!

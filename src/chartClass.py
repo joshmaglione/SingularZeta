@@ -7,20 +7,7 @@
 from parseSingularExpr import _expr_to_terms
 from sage.all import expand as _expand
 from sage.all import factor as _factor
-
-# Given a string representing a fully expanded polynomial, decides if it 
-# represents a monomial or not.
-def _is_monomial(poly):
-    terms = _expr_to_terms(poly)
-    if len(terms) > 1:
-        return False
-    return True
-
-# Given a string representing a factored polynomial, return the root of each of 
-# its factors. For example, 'x*y' would return {'x': [0], 'y' : [0]} while 'x*
-# (y-1)*(y+1)' would return {'x': [0], 'y': [-1, 1]}.
-def _find_roots(poly):
-    factors = poly.split("*")
+from sage.all import Set as _set
 
 
 class Chart():
@@ -61,21 +48,51 @@ class Chart():
     def IsMonomial(self):
         polys_str = [[str(_expand(t)) for t in f] for f in self.cone]
         polys = reduce(lambda x, y: x + y, polys_str, [])
+
+        def _is_monomial(poly):
+            terms = _expr_to_terms(poly)
+            if len(terms) > 1:
+                return False
+            return True
+        
         return all(map(_is_monomial, polys))
 
 
     # Decides if the cone data is quasi-monomial, i.e. under an affine 
     # traslation the cone data is equivalent to monomial cone data.
-    def IsQuasiMonomial(self):
-        # Not the most efficient, but this shouldn't be expensive.
-        if self.IsMonomial():
-            return True, [[0] for X in self.variables]
+    def IsQuasiMonomial(self): # My made up name.
+        flatten_list = lambda x, y: x + list(y)
+        polys_cone = reduce(flatten_list, self.cone, []) 
+        factor = lambda x: [f[0] for f in x.factor_list()]
+        factored_cone = reduce(flatten_list, map(factor, polys_cone), [])
 
-        # Not monomial, so find out where the data is not monomial.
-        polys_str = [[str(_factor(t)) for t in f] for f in self.cone]
-        polys = reduce(lambda x, y: x + y, polys_str, [])
-        translation = [[] for X in self.variables]
-        for f in polys:
-            if not _is_monomial(f):
+        # Safe for coefficients in the output of .factor_list().
+        def get_vars(f):
+            try: 
+                varbs = f.variables()
+            except AttributeError:
+                varbs = ()
+            return varbs
 
-        return polys
+        # First check: each factor has at most 1 variable.
+        for f in factored_cone:
+            if len(get_vars(f)) > 1:
+                return False
+
+        roots_cone = {str(X) : [] for X in self.variables}
+        constants = []
+        for f in factored_cone:
+            if len(get_vars(f)) == 0:
+                constants.append(f)
+            else:
+                x = f.variables()[0]
+                assert f.degree(x) == 1, "Assumed the factors would be linear."
+                root_f = f.roots()[0][0]
+                roots_cone[str(x)].append(root_f)
+        
+        # We clean up the data
+        is_nonunit = lambda x: (x != 1) and (x != -1)
+        consts = _set(filter(is_nonunit, constants))
+        roots_set = {str(X) : _set(roots_cone[str(X)]) for X in self.variables}
+
+        return True, roots_set, consts
