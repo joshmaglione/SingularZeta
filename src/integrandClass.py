@@ -6,6 +6,7 @@
 
 from parseSingularExpr import _term_to_factors, _str_to_vars
 from sage.all import factor as _factor
+from sage.all import var as _var
 
 # Given two tuples of variables, return the map from one tuple to the other.
 def _get_birat_map(vars1, vars2):
@@ -61,7 +62,7 @@ def _clean_integrand(integrand):
                 index2 += 1
         index += 1
 
-    return simplif_int
+    return tuple(simplif_int)
         
 
 
@@ -82,15 +83,13 @@ def MapIntegrand(atlas, chart):
     else:
         int_jac = []
 
-    # Clean it up
-    int_simplified = _clean_integrand(int_mapped + int_jac)
-    return tuple(int_simplified)
+    return Integrand(int_mapped + int_jac)
 
 
 class Integrand():
 
     def __init__(self, data):
-        self.data = data
+        self.data = _clean_integrand(data)
 
 
     def __repr__(self):
@@ -100,3 +99,9 @@ class Integrand():
             return out
         integrand =  reduce(lambda x, y: x + fact_to_str(y), self.data, "")
         return integrand[:-1]
+
+
+    def __iter__(self):
+        for x in self.data:
+            yield x
+    
