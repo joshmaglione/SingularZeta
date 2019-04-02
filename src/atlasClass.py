@@ -4,6 +4,7 @@
 #   Distributed under MIT License
 #
 
+from integrandClass import Integrand as _integrand
 from interfaceSingular import LoadChart as _load
 from parseEdges import _parse_edges, _get_total_charts, _get_leaves
 from sage.all import var as _var
@@ -25,7 +26,7 @@ def _get_integrand(varbs, LT):
         integrand.append(factor)
     if not LT:
         integrand = integrand[::-1]
-    return tuple(integrand)
+    return _integrand(tuple(integrand))
 
 
 class Atlas():
@@ -68,16 +69,6 @@ class Atlas():
         charts = "    Number of charts: %s\n" % (self.number_of_charts)
         leaves = "    Number of leaves: %s" % (len(self.leaves))
         return first + direct + charts + leaves
-
-
-    # Returns the integrand as a string, formatted nicely.
-    def Integrand(self):
-        def fact_to_str(factor):
-            s = _var('s')
-            out = "|%s|^(%s)*" % (factor[0], factor[1][1]*s + factor[1][0])
-            return out
-        integrand =  reduce(lambda x, y: x + fact_to_str(y), self.integrand, "")
-        return integrand[:-1]
 
 
     # Returns a set of integers corresponding to the bad primes.

@@ -4,7 +4,6 @@
 #   Distributed under MIT License
 #
 
-from integrand import  _get_birat_map  # maybe remove
 from parseSingularExpr import _expr_to_terms
 from sage.all import expand as _expand
 from sage.all import factor as _factor
@@ -149,4 +148,7 @@ class Chart():
         vals_vec = [len(poss_vals[x]) for x in poss_vals.keys()]
         # for vec in _my_odom(vals_vec):
         #     for k in len(vec):
-        
+        #         if vec[k] == vals_vec[k]:
+        #             # Just replace the variable
+        #         else: 
+        #             # Determine the value.

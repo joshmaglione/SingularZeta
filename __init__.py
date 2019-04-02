@@ -75,7 +75,7 @@ del Zeta_ver
 print _indent + "Importing functions."
 from src.atlasClass import *
 from src.chartClass import *
-from src.integrand import *
+from src.integrandClass import *
 from src.interfaceSingular import *
 
 

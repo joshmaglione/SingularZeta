@@ -85,3 +85,18 @@ def MapIntegrand(atlas, chart):
     # Clean it up
     int_simplified = _clean_integrand(int_mapped + int_jac)
     return tuple(int_simplified)
+
+
+class Integrand():
+
+    def __init__(self, data):
+        self.data = data
+
+
+    def __repr__(self):
+        def fact_to_str(factor):
+            s = _var('s')
+            out = "|%s|^(%s)*" % (factor[0], factor[1][1]*s + factor[1][0])
+            return out
+        integrand =  reduce(lambda x, y: x + fact_to_str(y), self.data, "")
+        return integrand[:-1]
