@@ -4,8 +4,8 @@
 #   Distributed under MIT License
 #
 
-from parseEdges import _parse_edges, _get_total_charts, _get_leaves
 from interfaceSingular import LoadChart as _load
+from parseEdges import _parse_edges, _get_total_charts, _get_leaves
 from sage.all import var as _var
 from sage.all import factor as _factor
 
@@ -70,6 +70,7 @@ class Atlas():
         return first + direct + charts + leaves
 
 
+    # Returns the integrand as a string, formatted nicely.
     def Integrand(self):
         def fact_to_str(factor):
             s = _var('s')
@@ -77,3 +78,18 @@ class Atlas():
             return out
         integrand =  reduce(lambda x, y: x + fact_to_str(y), self.integrand, "")
         return integrand[:-1]
+
+
+    # Returns a set of integers corresponding to the bad primes.
+    def BadPrimes(self):
+        primes = {}
+        for C in self.charts:
+            check, roots, consts = C.IsQuasiMonomial()
+            if not check:
+                print "Atlas has chart that is not quasi-monomial!"
+                return False
+            for k in consts:
+                flatten = lambda x: x[0]
+                bad_primes = map(flatten, k.factor())
+                primes.union(bad_primes)
+        return primes
