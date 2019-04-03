@@ -58,7 +58,7 @@ class Atlas():
         self.integrand = _get_integrand(self.root.variables, LT)
 
         # Load in all the leaves
-        self.charts = tuple([_load(i, direc) for i in self.leaves])
+        self.charts = tuple([_load(i, direc, atlas=self) for i in self.leaves])
             
 
     def __repr__(self):

@@ -25,7 +25,7 @@ def _get_safe_var():
     return r_var
 
 
-def LoadChart(num, direc, verbose=False):
+def LoadChart(num, direc, atlas=None, verbose=False):
     # We check that the input is the correct type.
     if not _is_int(num):
         raise TypeError("First argument must be an integer.")
@@ -117,6 +117,7 @@ def LoadChart(num, direc, verbose=False):
 
     # Now we construct our ring to keep all of this data in one place.
     C = _chart(coeff, varbs, \
+        atlas=atlas,
         biratMap=birat, 
         cent=cent, 
         cone=cone,

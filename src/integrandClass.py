@@ -65,31 +65,39 @@ def _clean_integrand(integrand):
     return tuple(simplif_int)
         
 
-
-# Given an atlas and a chart, modify the integrand for the chart according to 
-# the data. 
-def MapIntegrand(atlas, chart):
+def _get_integrand(varbs, biratMap, integrand, jacDet):
     # Build the actual birational map
-    birat_map = _get_birat_map(atlas.root.variables, chart.birationalMap)
-    init_integrand = atlas.integrand
+    birat_map = _get_birat_map(varbs, biratMap)
+    init_integrand = integrand
     map_it = lambda x: [birat_map(x[0]), x[1]]
 
     # Map the initial integrand to the current with the birational map
     int_mapped = map(map_it, init_integrand) 
 
     # Multiply by the Jacobian
-    if str(chart.jacDet) != "1":
-        int_jac = [[chart.jacDet, (1, 0)]]
+    if str(jacDet) != "1":
+        int_jac = [[jacDet, (1, 0)]]
     else:
         int_jac = []
 
     return Integrand(int_mapped + int_jac)
 
 
+# Given an atlas and a chart, modify the integrand for the chart according to 
+# the data. This is a wrapper, using the atlas and chart classes, for 
+# _get_integrand
+def MapIntegrand(atlas, chart):
+    return _get_integrand(atlas.root.variables, chart.birationalMap, 
+        atlas.integrand, chart.jacDet)
+
+
 class Integrand():
 
     def __init__(self, data):
         self.data = _clean_integrand(data)
+        self.terms = tuple([T[0] for T in self.data])
+        # This only makes sense *after* the data has been "cleaned"
+        self.data_dict = {T[0]: T[1] for T in self.data}
 
 
     def __repr__(self):

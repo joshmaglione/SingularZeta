@@ -4,6 +4,7 @@
 #   Distributed under MIT License
 #
 
+from integrandClass import MapIntegrand as _get_integrand
 from parseSingularExpr import _expr_to_terms
 from sage.all import expand as _expand
 from sage.all import factor as _factor
@@ -44,6 +45,7 @@ def update_chart(C, x, k, replace=False):
 class Chart():
 
     def __init__(self, R, X,
+        atlas = None,
         biratMap = None,
         cent = None,
         cone = None,
@@ -54,6 +56,7 @@ class Chart():
 
         self.coefficients = R
         self.variables = X
+        self.atlas = atlas
         self.birationalMap = biratMap
         self.cent = cent
         self.cone = cone
@@ -62,6 +65,11 @@ class Chart():
         self.lastMap = lastMap
         self.path = path
         self.factor = 1
+
+        if atlas != None:
+            self.integrand = _get_integrand(self.atlas, self)
+        else:
+            self.integrand = None
 
 
     def __repr__(self):
