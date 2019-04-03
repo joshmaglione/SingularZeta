@@ -50,6 +50,7 @@ class Chart():
         cent = None,
         cone = None,
         exDivs = None,
+        focus = None,
         jacDet = None,
         lastMap = None,
         path = None): 
@@ -61,10 +62,10 @@ class Chart():
         self.cent = cent
         self.cone = cone
         self.exDivisors = exDivs
+        self.focus = focus
         self.jacDet = jacDet
         self.lastMap = lastMap
         self.path = path
-        self.factor = 1
 
         if atlas != None:
             self.integrand = _get_integrand(self.atlas, self)
@@ -86,21 +87,17 @@ class Chart():
 
     # Decides if the cone data is monomial.
     def IsMonomial(self):
-        polys_str = [[str(_expand(t)) for t in f] for f in self.cone]
-        polys = reduce(lambda x, y: x + y, polys_str, [])
-
-        def _is_monomial(poly):
-            terms = _expr_to_terms(poly)
-            if len(terms) > 1:
+        flatten = lambda x: x[0]*x[1]
+        def _is_monomial(x):
+            s = str(flatten(x))
+            if "+" in s or "-" in s[1:]:
                 return False
             return True
-        
-        return all(map(_is_monomial, polys))
+        return all(map(_is_monomial, self.cone))
 
 
-    # Decides if the cone data is quasi-monomial, i.e. under an affine 
-    # traslation the cone data is equivalent to monomial cone data.
-    def IsQuasiMonomial(self): # My made up name.
+    # Decides if the cone data is locally monomial.
+    def IsLocallyMonomial(self): 
         flatten_list = lambda x, y: x + list(y)
         polys_cone = reduce(flatten_list, self.cone, []) 
         factor = lambda x: [f[0] for f in x.factor_list()]
@@ -140,23 +137,23 @@ class Chart():
 
 
     # Returns a tuple of charts based on further case distinctions.
-    def SubCharts(self):
-        check, roots, consts = self.IsQuasiMonomial()
-        if not check:
-            print "Chart is not quasi-monomial."
-            return False
-        poss_vals = {}
-        for x in self.variables:
-            if roots[str(x)] != _set({}):
-                if not roots[str(x)]:
-                    poss_vals.update({str(x) : list(roots[str(x)])})
+    # def SubCharts(self):
+    #     check, roots, consts = self.IsLocallyMonomial()
+    #     if not check:
+    #         print "Chart is not quasi-monomial."
+    #         return False
+    #     poss_vals = {}
+    #     for x in self.variables:
+    #         if roots[str(x)] != _set({}):
+    #             if not roots[str(x)]:
+    #                 poss_vals.update({str(x) : list(roots[str(x)])})
 
-        # Now we build all the maps to all the subcharts.
-        var_map = {str(X) : X for X in self.variables}
-        vals_vec = [len(poss_vals[x]) for x in poss_vals.keys()]
-        # for vec in _my_odom(vals_vec):
-        #     for k in len(vec):
-        #         if vec[k] == vals_vec[k]:
-        #             # Just replace the variable
-        #         else: 
-        #             # Determine the value.
+    #     # Now we build all the maps to all the subcharts.
+    #     var_map = {str(X) : X for X in self.variables}
+    #     vals_vec = [len(poss_vals[x]) for x in poss_vals.keys()]
+    #     # for vec in _my_odom(vals_vec):
+    #     #     for k in len(vec):
+    #     #         if vec[k] == vals_vec[k]:
+    #     #             # Just replace the variable
+    #     #         else: 
+    #     #             # Determine the value.

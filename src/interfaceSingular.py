@@ -6,6 +6,7 @@
 
 from sage.all import singular as _SING
 from sage.all import randint as _RAND
+from sage.all import factor as _factor
 from globalVars import _is_int, _CHART_LIB, _chart_num
 from chartClass import Chart as _chart
 from parseSingularBasics import _parse_printout, _parse_list
@@ -75,6 +76,10 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     _ = _SING.lib(pdir + _CHART_LIB)
     _ = _SING.eval(str_load_char + "\n" + str_set_ring)
 
+    # We verify that BO[1] is trivial.
+    if _SING.eval("print(BO[1]);").replace("\n", "") != "0":
+        raise ValueError("Ambient space of chart is different than expected.")
+
     # First we get the basics: coeff ring and vars.
     sing_ring_printout = _SING.eval(r_var + ";")
     coeff, varbs = _parse_printout(sing_ring_printout)
@@ -90,6 +95,17 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     # Get the cone data
     sing_cone_printout = _SING.eval("Cone;").split("\n")
     cone = _parse_list(sing_cone_printout) # Do not want the wrapped version
+    # Here, we clean up the cone data a little bit. 
+    # We make sure that the first term is positive and everything is factored 
+    # as much as possible. 
+    def pos(x):
+        y = str(x)
+        if y[0] == "-":
+            return -x
+        else:
+            return x
+    factor_pair = lambda x: tuple([pos(_factor(y)) for y in x])
+    cone_factored = map(factor_pair, cone)
 
     # Get the exceptional divisors
     num_exc_divs = int(_SING.eval("size(BO[4]);"))
@@ -109,8 +125,9 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     except:
         lastmap = None
 
-    # Get the path
-    # I don't know how to read it, but maybe it's not needed.
+    # Get the focus
+    sing_foc_str = _SING.eval("print(focus);").replace(",", "").split("\n")
+    focus = _parse_list_wrapped(sing_foc_str)
 
     # Clean up the Singular run
     _ = _SING.eval("kill %s;" % (r_var))
@@ -120,8 +137,9 @@ def LoadChart(num, direc, atlas=None, verbose=False):
         atlas=atlas,
         biratMap=birat, 
         cent=cent, 
-        cone=cone,
+        cone=cone_factored,
         exDivs=exDivs,
+        focus=focus,
         jacDet=jacDet,
         lastMap=lastmap)
 
