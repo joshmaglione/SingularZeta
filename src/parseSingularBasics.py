@@ -88,7 +88,7 @@ def _parse_list(sing_list, var_expr=True):
                 j += 1
             # Remove the indent and recurse.
             sub_list = map(lambda x: x[indent:], sing_list[i:j])
-            L.append(_parse_list(sub_list))
+            L.append(_parse_list(sub_list, var_expr=var_expr))
         else:
             raise AssertionError("Wasn't expecting to be here...")
         # i is either the next line starting with [n]: or i is too large.

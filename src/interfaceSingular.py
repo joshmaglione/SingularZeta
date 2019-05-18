@@ -10,6 +10,7 @@ from sage.all import factor as _factor
 from globalVars import _is_int, _CHART_LIB, _INT_LAT_LIB, _chart_num
 from chartClass import Chart as _chart
 from parseSingularBasics import _parse_printout, _parse_list
+from intLatticeClass import _parse_lattice_data
 
 # Randomly generates an unused variable name in Singular.
 def _get_safe_var():
@@ -152,7 +153,15 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     # Get the intersection lattice
     _ = _SING.eval(str_load_lat)
     _ = _SING.eval(str_set_lat)
-    sing_int_lat_str = _SING.eval('retlist;').split("\n")
+    sing_lat_vert_str = _SING.eval('retlist[1];').split("\n")
+    lat_vert = _parse_list(sing_lat_vert_str, var_expr=False)
+    sing_lat_comp_str = _SING.eval('retlist[2];').split("\n")
+    lat_comp = _parse_list(sing_lat_comp_str, var_expr=False)
+    sing_lat_edge_str = _SING.eval('retlist[3];').split("\n")
+    lat_edge = _parse_list(sing_lat_edge_str, var_expr=False)
+    sing_lat_divs_str = _SING.eval('print(retlist[4]);').replace(",", "").replace("_[1]=", "").split("\n")
+    lat_divs = _parse_list(sing_lat_divs_str)
+    lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert)
 
     # Clean up the Singular run
     for v in (r_var, r_var2):
@@ -166,7 +175,7 @@ def LoadChart(num, direc, atlas=None, verbose=False):
         cone=cone_factored,
         exDivs=exDivs,
         focus=focus,
-        intLat=sing_int_lat_str,
+        intLat=lattice,
         jacDet=jacDet,
         lastMap=lastmap)
 
