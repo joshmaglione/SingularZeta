@@ -77,6 +77,7 @@ from src.atlasClass import *
 from src.chartClass import *
 from src.integrandClass import *
 from src.interfaceSingular import *
+from src.intLatticeClass import *
 
 
 # Sage is still on python2.

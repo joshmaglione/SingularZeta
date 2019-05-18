@@ -41,6 +41,13 @@ def _parse_coeff(str_coeff):
         raise ValueError("Unknown Singular ring.")
 
 
+# Assumed to be an array of integers
+def _parse_array(str_array):
+    str_split = str_array.replace(" ", "").split(",")
+    int_list = [_ZZ.coerce(int(i)) for i in str_split]
+    return tuple(int_list)
+
+
 # Assumed variables are separated by white space.
 def _parse_vars(str_vars):
     str_vars_form = _format_var(str_vars).split(" ")
@@ -56,15 +63,19 @@ def _parse_printout(printout):
 
 
 # Given list of lines of a Singular printout of a list, create a tuple whose 
-# entries are the strings in the given list. Note that sing_list is assumed to essentially be a singular list split by '\n'
-def _parse_list(sing_list):
+# entries are the strings in the given list. Note that sing_list is assumed to 
+# essentially be a singular list split by '\n'
+def _parse_list(sing_list, var_expr=True):
     # Singular indents with 3 spaces.
     indent = 3
 
     # If it is not a list, just return it. This is the "base" case.
     if not "[1]:" in sing_list[0]:
         one_line = reduce(lambda x, y: x + y, sing_list, "")
-        return _expr_to_tup(one_line)
+        if var_expr:
+            return _expr_to_tup(one_line)
+        else:
+            return _parse_array(one_line)
 
     # Now we recurse.
     L = []

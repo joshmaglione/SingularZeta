@@ -7,7 +7,7 @@
 from sage.all import singular as _SING
 from sage.all import randint as _RAND
 from sage.all import factor as _factor
-from globalVars import _is_int, _CHART_LIB, _chart_num
+from globalVars import _is_int, _CHART_LIB, _INT_LAT_LIB, _chart_num
 from chartClass import Chart as _chart
 from parseSingularBasics import _parse_printout, _parse_list
 
@@ -47,21 +47,27 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     r_var = _get_safe_var()
 
     # Singular code to run.
-    str_load_lib = 'LIB "' + pdir + _CHART_LIB + '";'
+    str_load_lib1 = 'LIB "' + pdir + _CHART_LIB + '";'
+    str_load_lib2 = 'LIB "' + pdir + 'LIB/primdec.lib";'
+    str_load_lib3 = 'LIB "' + pdir + _INT_LAT_LIB + '";'
     str_load_char = 'def %s = load_Chart(%s, "%s");' % (r_var, num, direc)
     str_set_ring = 'setring %s;' % (r_var)
 
     # Print statements for the user.
     if verbose:
         print "Loading Singular library: \n    %s" % (pdir + _CHART_LIB)
+        print "Loading Singular library: \n    %s" % (pdir + 'LIB/primdec.lib')
+        print "Loading Singular library: \n    %s" % (pdir + _INT_LAT_LIB)
         print "Loading Chart: \n    %s" % (direc + _chart_num(num))
         print "\nRunning the following Singular code:"
-        print "> " + str_load_lib
+        for lib_str in (str_load_lib1, str_load_lib2, str_load_lib3):
+            print "> " + lib_str
         print "> " + str_load_char
         print "> " + str_set_ring + "\n"
 
     # A wrapper for our _parse_list function
     _parse_list_wrapped = lambda x: tuple([_parse_list(y) for y in x])
+
     def _exDivs_wrap(size):
         divs = []
         for i in range(size):
@@ -70,15 +76,17 @@ def LoadChart(num, direc, atlas=None, verbose=False):
             divs += [_parse_list_wrapped(data)]
         return tuple(divs)
 
-    # In Sage, the Singular run is continous, so we can make multiple calls to  
+    # In Sage, the Singular run is continuous, so we can make multiple calls to 
     # the same variables for example. 
     # Currently, no error checking here. 
     _ = _SING.lib(pdir + _CHART_LIB)
+    _ = _SING.lib(pdir + 'LIB/primdec.lib')
+    _ = _SING.lib(pdir + _INT_LAT_LIB)
     _ = _SING.eval(str_load_char + "\n" + str_set_ring)
 
     # We verify that BO[1] is trivial.
-    if _SING.eval("print(BO[1]);").replace("\n", "") != "0":
-        raise ValueError("Ambient space of chart is different than expected.")
+    # if _SING.eval("print(BO[1]);").replace("\n", "") != "0":
+    #     raise ValueError("Ambient space of chart is different than expected.")
 
     # First we get the basics: coeff ring and vars.
     sing_ring_printout = _SING.eval(r_var + ";")
@@ -129,8 +137,26 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     sing_foc_str = _SING.eval("print(focus);").replace(",", "").split("\n")
     focus = _parse_list_wrapped(sing_foc_str)
 
+    # Get the info read for the intersection lattice
+    r_var2 = _get_safe_var()
+    str_load_lat = 'def %s = createInterLattice(%s, "%s");' % (r_var2, num, direc)
+    str_set_lat = 'setring %s;' % (r_var2)
+
+    # Print statements for the user about the intersection lattice
+    if verbose:
+        print "Creating the intersection lattice."
+        print "Running the following Singular code:"
+        print "> " + str_load_lat
+        print "> " + str_set_lat
+    
+    # Get the intersection lattice
+    _ = _SING.eval(str_load_lat)
+    _ = _SING.eval(str_set_lat)
+    sing_int_lat_str = _SING.eval('retlist;').split("\n")
+
     # Clean up the Singular run
-    _ = _SING.eval("kill %s;" % (r_var))
+    for v in (r_var, r_var2):
+        _ = _SING.eval("kill %s;" % (v))
 
     # Now we construct our ring to keep all of this data in one place.
     C = _chart(coeff, varbs, \
@@ -140,6 +166,7 @@ def LoadChart(num, direc, atlas=None, verbose=False):
         cone=cone_factored,
         exDivs=exDivs,
         focus=focus,
+        intLat=sing_int_lat_str,
         jacDet=jacDet,
         lastMap=lastmap)
 

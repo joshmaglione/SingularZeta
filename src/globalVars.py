@@ -10,4 +10,5 @@ _is_int = lambda x: isinstance(x, int) or isinstance(x, _int)
 
 # The next vars are defined globally in case their format/ name changes.
 _CHART_LIB = "Chart_loading.lib"
+_INT_LAT_LIB = "intersectionLattice.lib"
 _chart_num = lambda x: "Chart" + str(x) + ".ssi" 

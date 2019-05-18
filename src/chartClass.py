@@ -51,6 +51,7 @@ class Chart():
         cone = None,
         exDivs = None,
         focus = None,
+        intLat = None,
         jacDet = None,
         lastMap = None,
         path = None): 
@@ -63,6 +64,7 @@ class Chart():
         self.cone = cone
         self.exDivisors = exDivs
         self.focus = focus
+        self.intLat = intLat
         self.jacDet = jacDet
         self.lastMap = lastMap
         self.path = path
