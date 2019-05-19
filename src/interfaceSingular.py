@@ -85,13 +85,20 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     _ = _SING.lib(pdir + _INT_LAT_LIB)
     _ = _SING.eval(str_load_char + "\n" + str_set_ring)
 
-    # We verify that BO[1] is trivial.
-    # if _SING.eval("print(BO[1]);").replace("\n", "") != "0":
-    #     raise ValueError("Ambient space of chart is different than expected.")
-
-    # First we get the basics: coeff ring and vars.
+    # Get the basics: coeff ring and vars.
     sing_ring_printout = _SING.eval(r_var + ";")
     coeff, varbs = _parse_printout(sing_ring_printout)
+
+    # Get the factor of the ambient space.
+    sing_amb_fact = _SING.eval("print(BO[1]);").replace(",", "").split("\n")
+    if sing_amb_fact[0] != "0":
+        # Print info about the ambient space 
+        if verbose:
+            print "Ambient space not necessarily affine."
+        amb_fact = _parse_list_wrapped(sing_amb_fact)
+    else:
+        amb_fact = 0
+
 
     # Get the birational map data
     sing_birat_str = _SING.eval("print(BO[5]);").replace(",", "").split("\n")
@@ -143,28 +150,39 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     str_load_lat = 'def %s = createInterLattice(%s, "%s");' % (r_var2, num, direc)
     str_set_lat = 'setring %s;' % (r_var2)
 
-    # Print statements for the user about the intersection lattice
-    if verbose:
-        print "Creating the intersection lattice."
-        print "Running the following Singular code:"
-        print "> " + str_load_lat
-        print "> " + str_set_lat
-    
     # Get the intersection lattice
-    _ = _SING.eval(str_load_lat)
-    _ = _SING.eval(str_set_lat)
-    sing_lat_vert_str = _SING.eval('retlist[1];').split("\n")
-    lat_vert = _parse_list(sing_lat_vert_str, var_expr=False)
-    sing_lat_comp_str = _SING.eval('retlist[2];').split("\n")
-    lat_comp = _parse_list(sing_lat_comp_str, var_expr=False)
-    sing_lat_edge_str = _SING.eval('retlist[3];').split("\n")
-    lat_edge = _parse_list(sing_lat_edge_str, var_expr=False)
-    sing_lat_divs_str = _SING.eval('print(retlist[4]);').replace(",", "").replace("_[1]=", "").split("\n")
-    lat_divs = _parse_list(sing_lat_divs_str)
-    lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert)
+    if amb_fact == 0:
+        # Print statements for the user about the intersection lattice
+        if verbose:
+            print "Creating the intersection lattice."
+            print "Running the following Singular code:"
+            print "> " + str_load_lat
+            print "> " + str_set_lat
+        
+        # Get all the data from the int lattice individually
+        _ = _SING.eval(str_load_lat)
+        _ = _SING.eval(str_set_lat)
+        sing_lat_vert_str = _SING.eval('retlist[1];').split("\n")
+        lat_vert = _parse_list(sing_lat_vert_str, var_expr=False)
+        sing_lat_comp_str = _SING.eval('retlist[2];').split("\n")
+        lat_comp = _parse_list(sing_lat_comp_str, var_expr=False)
+        sing_lat_edge_str = _SING.eval('retlist[3];').split("\n")
+        lat_edge = _parse_list(sing_lat_edge_str, var_expr=False)
+        sing_lat_divs_str = _SING.eval('print(retlist[4]);').replace(",", "").replace("_[1]=", "").split("\n")
+        lat_divs = _parse_list(sing_lat_divs_str)
+
+        # Put all the data together
+        lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert)
+        random_varbs = [r_var, r_var2]
+    else: 
+        # TODO: update once we can compute the intersection lattice
+        lattice = None
+        random_varbs = [r_var]
+        if verbose:
+            print "Cannot compute intersection lattice yet due to non-trivial ambient space."
 
     # Clean up the Singular run
-    for v in (r_var, r_var2):
+    for v in random_varbs:
         _ = _SING.eval("kill %s;" % (v))
 
     # Now we construct our ring to keep all of this data in one place.
@@ -174,6 +192,7 @@ def LoadChart(num, direc, atlas=None, verbose=False):
         cent=cent, 
         cone=cone_factored,
         exDivs=exDivs,
+        factor=amb_fact,
         focus=focus,
         intLat=lattice,
         jacDet=jacDet,

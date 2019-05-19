@@ -43,9 +43,12 @@ def _parse_coeff(str_coeff):
 
 # Assumed to be an array of integers
 def _parse_array(str_array):
-    str_split = str_array.replace(" ", "").split(",")
-    int_list = [_ZZ.coerce(int(i)) for i in str_split]
-    return tuple(int_list)
+    if 'empty' in str_array:
+        return []
+    else:
+        str_split = str_array.replace(" ", "").split(",")
+        int_list = [_ZZ.coerce(int(i)) for i in str_split]
+        return tuple(int_list)
 
 
 # Assumed variables are separated by white space.
