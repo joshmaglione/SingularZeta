@@ -25,10 +25,13 @@ class Chart():
         exDivs = None,
         factor = None,
         focus = None,
+        identity = None,
         intLat = None,
         jacDet = None,
         lastMap = None,
         path = None): 
+
+        self._id = identity
 
         self.coefficients = R
         self.variables = X

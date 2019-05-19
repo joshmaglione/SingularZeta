@@ -194,6 +194,7 @@ def LoadChart(num, direc, atlas=None, verbose=False):
         exDivs=exDivs,
         factor=amb_fact,
         focus=focus,
+        identity=num,
         intLat=lattice,
         jacDet=jacDet,
         lastMap=lastmap)

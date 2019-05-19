@@ -4,6 +4,8 @@
 #   Distributed under MIT License
 #
 
+from sage.all import PolynomialRing as _poly_ring
+from sage.all import QQ as _QQ
 from sage.all import var as _var
 from sage.all import ZZ as _ZZ
 
@@ -96,3 +98,14 @@ def _expr_to_tup(exp):
         return t
     else:
         return tuple(t)
+
+def _parse_user_input(inp):
+    try:
+        # First try to see if it is an integer
+        return _ZZ.coerce(int(inp))
+    except:
+        # Not an integer
+        R = _poly_ring(_QQ, 'p')
+        return R(inp)
+
+    
