@@ -6,6 +6,7 @@
 
 from integrandClass import MapIntegrand as _get_integrand
 from parseSingularExpr import _expr_to_terms
+from polynomialManipulation import _construct_subchart
 from sage.all import expand as _expand
 from sage.all import factor as _factor
 from sage.all import Ideal as _ideal
@@ -29,9 +30,11 @@ class Chart():
         intLat = None,
         jacDet = None,
         lastMap = None,
+        parent = None,
         path = None): 
 
         self._id = identity
+        self._parent = parent
 
         self.coefficients = R
         self.variables = X
@@ -46,11 +49,7 @@ class Chart():
         self.jacDet = jacDet
         self.lastMap = lastMap
         self.path = path
-
-        # if atlas != None:
-        #     self.integrand = _get_integrand(self.atlas, self)
-        # else:
-        #     self.integrand = None
+        self.subcharts = None
 
         if intLat != None:
             self.intLat.chart = self
@@ -79,7 +78,7 @@ class Chart():
         return all(map(_is_monomial, self.cone))
 
 
-    # Returns the ambient space as a (quotient) polynomial ring
+    # Returns the ambient space as a (quotient) polynomial ring.
     def AmbientSpace(self):
         R = _polyring(self.coefficients, self.variables)
         if self.factor == 0:
@@ -88,3 +87,12 @@ class Chart():
         S = R.quotient(I)
         return S
 
+    # Constructs the subcharts based on the intersection lattice.
+    def Subcharts(self, recompute=False):
+        if not recompute and self.subcharts != None:
+            return self.subcharts
+        verts = [v for level in range(self.intLat.vertices) for v in level]
+        charts = tuple([_construct_subchart(self, v) for v in verts])
+        self.subcharts = charts
+        return charts
+        

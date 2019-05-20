@@ -5,7 +5,7 @@
 #
 
 
-__version__ = 0.3
+__version__ = 0.4
 
 print "Loading..."
 _indent = " "*4
@@ -36,6 +36,7 @@ print _indent + "Loading Singular."
 from sage.all import singular as _singular
 _ = _singular.eval("1 + 1;")
 
+# Is this needed??????????????????????????????????????
 # Load up the 'roots' command
 print _indent + "Loading Sage functions."
 from sage.all import var as _var
@@ -78,6 +79,7 @@ from src.chartClass import *
 from src.integrandClass import *
 from src.interfaceSingular import *
 from src.intLatticeClass import *
+from src.polynomialManipulation import _construct_subchart
 
 
 # Sage is still on python2.

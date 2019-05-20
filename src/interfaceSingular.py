@@ -103,6 +103,7 @@ def LoadChart(num, direc, atlas=None, verbose=False, get_lat=True):
     # Get the birational map data
     sing_birat_str = _SING.eval("print(BO[5]);").replace(",", "").split("\n")
     birat = _parse_list_wrapped(sing_birat_str)
+    birat = tuple([im.factor() for im in birat])
 
     # Get the center of the blow-up
     sing_cent_str = _SING.eval("print(cent);").replace(",", "").split("\n")
@@ -131,10 +132,10 @@ def LoadChart(num, direc, atlas=None, verbose=False, get_lat=True):
     try:
         sing_jacobian_str = _SING.eval("jacDet;")
         jacDet = _parse_list(sing_jacobian_str).factor() # Not wrapped version
-        if str(jacDet)[0] == '-':
+        if str(jacDet)[0] == '-': # Remove the negative if it's there
             jacDet = -jacDet
     except:
-        jacDet = 1
+        jacDet = 1 # Currently the Jacobian is not defined for the root.
     
     # Get the last map
     try:

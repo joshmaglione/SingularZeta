@@ -58,7 +58,7 @@ class IntLattice():
         Nedges = reduce(add_up, map(len, self.edges))
         return "An intersection lattice with %s vertices and %s edges." % (Nverts, Nedges)
 
-    def RationalPoints(self, user_input=False, recompute=False):
+    def pRationalPoints(self, user_input=False, recompute=False):
         if (not recompute) and (self.p_points != None):
             return self.p_points
         if self.chart == None:

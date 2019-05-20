@@ -36,7 +36,7 @@ def _clean_integrand(integrand):
             exp_str_fact = _remove_negative(exp_str.split("*"))
             for t in exp_str_fact:
                 # For the moment, I am assuming all factors are monomial. 
-                # assert not ("-" in t or "+" in t), "Assumed terms are monomial!"
+                assert not ("-" in t or "+" in t), "Assumed terms are monomial!"
                 X, expon = _term_to_factors(t)[0]
                 varb = _str_to_vars([X, 1])
                 cleaned_int.append([varb, (expon*fact[1][0], expon*fact[1][1])])
