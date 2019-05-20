@@ -40,7 +40,7 @@ _ = _singular.eval("1 + 1;")
 # Load up the 'roots' command
 print _indent + "Loading Sage functions."
 from sage.all import var as _var
-_ = (_var('x')).roots()
+_ = _var('x')
 
 
 # See if Zeta is already imported.
