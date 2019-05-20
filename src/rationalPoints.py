@@ -35,6 +35,6 @@ def _rational_points(A, S, user_input=False, label=''):
                 except:
                     print 'Unknown symbol.'
         else:
-            N = _var('pRP' + label)
+            N = _var('C' + label)
     
     return tuple([N, variety])

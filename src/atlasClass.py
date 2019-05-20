@@ -52,23 +52,39 @@ class Atlas():
         # Load Chart 1 as the starting chart. 
         # BUG with the following command due to jacDet not being defined.
         # self.root = _load(1, direc)
-        self.root = _load(2, direc) # PLACEHOLDER (this may cause bugs)
+        # self.root = _load(2, direc) # PLACEHOLDER (this may cause bugs)
 
-        # Get the starting integrand.
-        self.integrand = _get_integrand(self.root.variables, LT)
+        # # Get the starting integrand.
+        # self.integrand = _get_integrand(self.root.variables, LT)
 
         # Load in all the leaves
-        self.charts = tuple([_load(i, direc, atlas=self) for i in self.leaves])
+        self.charts = tuple([_load(i, direc) for i in self.leaves])
+
+        # TODO: Once the jacDet bug is fixed, uncomment the lines above.
+        self.root = _load(1, direc, get_lat=False) # Cannot run Singular anymore
+        self.integrand = _get_integrand(self.root.variables, LT)
+        for C in self.charts:
+            C.atlas = self
             
 
     def __repr__(self):
         ring = self.charts[0].coefficients
         dim = len(self.charts[0].variables)
+        # TODO: Eventually when the bug from ambient spaces is fixed, turn into 
+        # lambda function.
+        def chart_to_verts(x): 
+            try:
+                return len(x.intLat.vertices)
+            except: 
+                return 0
+        add_up = lambda x, y: x + y 
+        Nverts = reduce(add_up, map(chart_to_verts, self.charts))
         first = "An atlas over %s in %s dimensions.\n" % (ring, dim)
         direct = "    Directory: %s\n" % (self.directory)
         charts = "    Number of charts: %s\n" % (self.number_of_charts)
-        leaves = "    Number of leaves: %s" % (len(self.leaves))
-        return first + direct + charts + leaves
+        leaves = "    Number of leaves: %s\n" % (len(self.leaves))
+        integrals = "    Number of integrals: %s" % (Nverts)
+        return first + direct + charts + leaves + integrals
 
 
     # Returns a set of integers corresponding to the bad primes.

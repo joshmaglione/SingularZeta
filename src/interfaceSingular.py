@@ -27,7 +27,7 @@ def _get_safe_var():
     return r_var
 
 
-def LoadChart(num, direc, atlas=None, verbose=False):
+def LoadChart(num, direc, atlas=None, verbose=False, get_lat=True):
     # We check that the input is the correct type.
     if not _is_int(num):
         raise TypeError("First argument must be an integer.")
@@ -130,7 +130,9 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     # Get the Jacobian determinant
     try:
         sing_jacobian_str = _SING.eval("jacDet;")
-        jacDet = _parse_list(sing_jacobian_str) # Do not want wrapped version
+        jacDet = _parse_list(sing_jacobian_str).factor() # Not wrapped version
+        if str(jacDet)[0] == '-':
+            jacDet = -jacDet
     except:
         jacDet = 1
     
@@ -151,7 +153,7 @@ def LoadChart(num, direc, atlas=None, verbose=False):
     str_set_lat = 'setring %s;' % (r_var2)
 
     # Get the intersection lattice
-    if amb_fact == 0:
+    if get_lat and (amb_fact == 0):
         # Print statements for the user about the intersection lattice
         if verbose:
             print "Creating the intersection lattice."
