@@ -79,7 +79,7 @@ from src.chartClass import *
 from src.integrandClass import *
 from src.interfaceSingular import *
 from src.intLatticeClass import *
-from src.polynomialManipulation import _construct_subchart
+# from src.polynomialManipulation import _construct_subchart
 
 
 # Sage is still on python2.

@@ -5,23 +5,10 @@
 #
 
 # from globalVars import _is_int
-from sage.all import Set as _set
-from chartClass import Chart as _chart
-from sage.all import var as _var
+# from sage.all import Set as _set
+# from chartClass import Chart as _chart
+# from sage.all import var as _var
 # from util import _my_odom
-
-# Given a list of variables and an integer n, return an n-tuple of new, safe 
-# variables.
-def _safe_variables(varbs, n):
-    i = 1
-    letter = 'z'
-    varbs_str = {str(x) for x in varbs}
-    new_varbs = []
-    for k in range(n):
-        if not letter + str(i) in varbs_str:
-            new_varbs.append(_var(letter + str(i)))
-        i += 1
-    return tuple(new_varbs)
 
 
 # # Given the non_units, units, and an expression to test, determine if test is a 
@@ -175,98 +162,3 @@ def _safe_variables(varbs, n):
 
 
 #     return repl
-
-# Given an expression expr, units, non_units, and replacements repl, simplify 
-# the expression to be monomial in the latest variables.
-def _simplify_expr(expr, units, non_units, repl):
-    p = _var('p')
-    f = expr.factor()
-    # Run through all the factors of expr
-    for i in range(len(f)):
-        d = f[i][0]
-        if d in units:
-            # If the factor is a unit, replace it with 1
-            f[i][0] = 1
-        else:
-            # If the factor is not a unit, replace it with p*z
-            if d in non_units:
-                j = non_units.index(d)
-                f[i][0] = p*repl[j]
-            else:
-                raise AssertionError("When doing a variable substitution, expected a factor to be in the set of units or non-units. Is the intersection lattice compatible with the chart?")
-    # We might need to return a polynomial instead of a factorized polynomial.
-    return f
-
-# Given the chart, units, non_units, and the replacement variables, construct a 
-# new chart from C with the given data.
-def _simplify(C, units, non_units, repl):
-    # To be used to by 'map'
-    _simp_map = lambda x: _simplify_expr(x, units, non_units, repl)
-
-    # First we update the birational map.
-    birat = tuple(map(_simp_map, C.biratMap))
-
-    # We update the cone.
-    cone = [tuple(map(_simp_map, ineq)) for ineq in C.cone]
-
-    # Finally we update the Jacobian.
-    jacobian = _simp_map(C.jacDet)
-
-    # Now we determine which variables are gone and which remain. 
-    new_varbs = []
-    app_to_list = lambda x: new_varbs.extend(list(x.variables()))
-    _ = map(app_to_list, birat)
-    _ = [tuple(map(_simp_map, ineq)) for ineq in cone]
-    _ = app_to_list(jacobian)
-    
-
-    sub_C = _chart(C.coefficient, new_varbs, 
-        atlas = C.atlas,
-        biratMap = birat,
-        cent = C.cent,
-        cone = cone,
-        exDivs = C.exDivs,
-        factor = C.factor,
-        focus = C.focus,
-        jacDet = jacobian, 
-        lastMap = C.lastMap,
-        parent = C,
-        path = C.path)
-    return sub_C
-
-
-# Given a chart C and a vertex v, construct the (monomial) subchart of C with 
-# respect to v. This comes from the intersection lattice of C. 
-def _construct_subchart(C, v): 
-    # Get the data
-    A = C.AmbientSpace()
-    divs = [A.coerce(d) for d in C.intLat.divisors]
-    n = len(divs)
-
-    # Even though these are supposed to be sets, there's something about them 
-    # that makes them not act like sets. You can only use difference and union 
-    # to add or subtract elements...
-    units = [divs[k - 1] for k in _set(range(1, n+1)).difference(v)]
-    non_units = [divs[k - 1] for k in v]
-
-    # Determine the variables in the divs.
-    varbs = {x for d in divs for x in d.variables()}
-    a = min(n, len(varbs))
-
-    # Will replace non_unit[k] with new_varb[k].
-    new_varbs = _safe_variables(C.variables, a)
-
-    # Replace non_unit[k] with p*repl[k]
-    repl = [new_varbs[i] for i in range(len(non_units))]
-
-    # Build the subchart
-    sub_C = _simplify(C, units, non_units, repl)
-
-    # We modify the subchart just slightly. 
-    # We give it an id from C
-    vert_to_str = lambda x, y: str(x) + y
-    sub_C._id = int(str(C._id) + reduce(vert_to_str, v, ''))
-    # We multiply by a factor of p
-    rem = a - len(new_varbs)
-
-    return sub_C
