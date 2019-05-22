@@ -5,15 +5,19 @@
 #
 
 
-__version__ = 0.4
+__version__ = 0.5
 
 print "Loading..."
-_indent = " "*4
+from src.globalVars import _DEFAULT_INDENT as _indent
+
+if not isinstance(_indent, str):
+    raise TypeError("Global variable '_DEFAULT_INDENT' must be a string.")
 
 # === This is very annoying during development =================================
 import sys as _sys
 _sys.dont_write_bytecode = True
 # ==============================================================================
+
 
 # Enables us to turn off printing.
 from os import devnull as _DEVNULL
@@ -27,6 +31,7 @@ class _HiddenPrints:
         _sys.stdout.close()
         _sys.stdout = self._original_stdout
 
+
 # ------------------------------------------------------------------------------
 #   We front-load some functions so that the initial call after loading the 
 #   SingularZeta is not slow. 
@@ -35,6 +40,7 @@ class _HiddenPrints:
 print _indent + "Loading Singular."
 from sage.all import singular as _singular
 _ = _singular.eval("1 + 1;")
+
 
 # Is this needed??????????????????????????????????????
 # Load up the 'roots' command
@@ -70,6 +76,7 @@ else:
     print _indent*2 + "Zeta url: http://www.maths.nuigalway.ie/~rossmann/Zeta/"
 del Zeta_ver
 
+
 # 'from foo import *' leaves hidden functions hidden and brings it up to 
 # TensorSpace instead of TensorSpace.src
 # Load interface
@@ -79,7 +86,15 @@ from src.chartClass import *
 from src.integrandClass import *
 from src.interfaceSingular import *
 from src.intLatticeClass import *
-# from src.polynomialManipulation import _construct_subchart
+from src.globalVars import _DEFAULT_VERBOSE as _verbose
+
+
+# Load the global variables that the user can change.  
+if not isinstance(_verbose, bool):
+    raise TypeError("Global variable '_DEFAULT_VERBOSE' must be set to boolean: True or False.")
+else:
+    if _verbose:
+        print _indent + "Verbose printing turned on."
 
 
 # Sage is still on python2.

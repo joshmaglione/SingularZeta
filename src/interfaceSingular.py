@@ -8,6 +8,8 @@ from sage.all import singular as _SING
 from sage.all import randint as _RAND
 from sage.all import factor as _factor
 from globalVars import _is_int, _CHART_LIB, _INT_LAT_LIB, _chart_num
+from globalVars import _DEFAULT_INDENT as _indent
+from globalVars import _DEFAULT_VERBOSE as _verbose
 from chartClass import Chart as _chart
 from parseSingularBasics import _parse_printout, _parse_list
 from intLatticeClass import _parse_lattice_data
@@ -27,7 +29,7 @@ def _get_safe_var():
     return r_var
 
 
-def LoadChart(num, direc, atlas=None, verbose=False, get_lat=True):
+def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
     # We check that the input is the correct type.
     if not _is_int(num):
         raise TypeError("First argument must be an integer.")
@@ -56,10 +58,10 @@ def LoadChart(num, direc, atlas=None, verbose=False, get_lat=True):
 
     # Print statements for the user.
     if verbose:
-        print "Loading Singular library: \n    %s" % (pdir + _CHART_LIB)
-        print "Loading Singular library: \n    %s" % (pdir + 'LIB/primdec.lib')
-        print "Loading Singular library: \n    %s" % (pdir + _INT_LAT_LIB)
-        print "Loading Chart: \n    %s" % (direc + _chart_num(num))
+        print "Loading Singular library: \n%s%s" % (_indent, pdir + _CHART_LIB)
+        print "Loading Singular library: \n%s%s" % (_indent, pdir + 'LIB/primdec.lib')
+        print "Loading Singular library: \n%s%s" % (_indent, pdir + _INT_LAT_LIB)
+        print "Loading Chart: \n%s%s" % (_indent, direc + _chart_num(num))
         print "\nRunning the following Singular code:"
         for lib_str in (str_load_lib1, str_load_lib2, str_load_lib3):
             print "> " + lib_str

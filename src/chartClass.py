@@ -4,6 +4,9 @@
 #   Distributed under MIT License
 #
 
+from globalVars import _is_int
+from globalVars import _DEFAULT_INDENT as _indent
+from globalVars import _DEFAULT_VERBOSE as _verbose
 from integrandClass import MapIntegrand as _get_integrand
 from parseSingularExpr import _expr_to_terms
 from sage.all import expand as _expand
@@ -29,33 +32,63 @@ def _safe_variables(varbs, n):
     return tuple(new_varbs)
 
 
+# Given the divisors of the intersection lattice and the new variables, return 
+# a dictionary to the new variables.
+def _get_map(divs, varbs):
+    # TODO: Continue!
+
+# Given a list S of polynomials, return a set of variables, as strings, in the 
+# set S
+def _get_variable_support(S):
+    mult = lambda x, y: x*y
+    f = reduce(mult, S, 1)
+    return {str(x) for x in f.variables()}
+
+
 # Given an expression expr, units, non_units, and replacements repl, simplify 
 # the expression to be monomial in the latest variables.
 def _simplify_expr(expr, units, non_units, repl):
+    sys_varbs = _get_variable_support(units + non_units)
     p = _var('p')
     f = expr.factor_list()
+    new_factors = []
+    # Easier to compare polynomials as strings. This might bite me later.
+    conv_to_str = lambda x: str(x)
+
     # Run through all the factors of expr
     for i in range(len(f)):
-        print f
         d = f[i][0]
-        if d in units:
-            # If the factor is a unit, replace it with 1
-            f[i] = tuple([1, f[i][1]])
-        else:
-            # If the factor is not a unit, replace it with p*z
-            if d in non_units:
-                j = non_units.index(d)
-                f[i] = tuple([p*repl[j], f[i][1]])
+        # First we check that all the variables are contained in the support of 
+        # the system. 
+        if all(str(x) in sys_varbs for x in d.variables()):
+            if str(d) in map(conv_to_str, units):
+                # If the factor is a unit, replace it with 1
+                new_factors.append([1, 1])
             else:
-                # Maybe it's OK that the variable does not get replaced...
-                print "The factor %s is not in %s nor %s" % (d, units, non_units)
-                # raise AssertionError("When doing a variable substitution, expected a factor to be in the set of units or non-units. Is the intersection lattice compatible with the chart?")
+                if str(d) in map(conv_to_str, non_units):
+                    # If the factor is not a unit, replace it with p*z
+                    j = non_units.index(d)
+                    new_factors.append([p*repl[j], f[i][1]])
+                else:
+                    # In this case, the factor is neither in the set of units 
+                    # nor is it in the set of non_units. **By the assumption 
+                    # that this data corresponds to a locally monomial chart**, 
+                    # we know this factor is just a unit. Therefore, we just 
+                    # replace it with 1. 
+                    new_factors.append([1, 1])
+        else: 
+            new_factors.append([d, f[i][1]])
+
     # We might need to return a polynomial instead of a factorized polynomial.
-    return f
+    mult = lambda x, y: x*y
+    power = lambda x: x[0]**x[1]
+    out_poly = reduce(mult, map(power, new_factors), 1)
+    return out_poly
+
 
 # Given the chart, units, non_units, and the replacement variables, construct a 
 # new chart from C with the given data.
-def _simplify(C, units, non_units, repl):
+def _simplify(C, units, non_units, repl, verbose=_verbose):
     # To be used to by 'map'
     _simp_map = lambda x: _simplify_expr(x, units, non_units, repl)
 
@@ -69,20 +102,18 @@ def _simplify(C, units, non_units, repl):
     jacobian = _simp_map(C.jacDet)
 
     # Now we determine which variables are gone and which remain. 
-    new_varbs_list = []
-    app_to_list = lambda x: new_varbs.extend(list(x.variables()))
-    _ = map(app_to_list, birat)
-    _ = [tuple(map(_simp_map, ineq)) for ineq in cone]
-    _ = app_to_list(jacobian)
-    new_varb_set = {x for x in new_varbs_list}
-    new_varbs = tuple([x for x in new_varb_set])
+    flatten = lambda x, y: list(x) + list(y)
+    all_polys = list(birat) + reduce(flatten, cone, []) + [jacobian]
+    non_const = lambda x: not _is_int(x)
+    new_varbs_str = _get_variable_support(filter(non_const, all_polys))
+    new_varbs = tuple([_var(x) for x in new_varbs_str if x != 'p'])
 
-    sub_C = _chart(C.coefficient, new_varbs, 
+    sub_C = Chart(C.coefficients, new_varbs, 
         atlas = C.atlas,
         biratMap = birat,
         cent = C.cent,
         cone = cone,
-        exDivs = C.exDivs,
+        exDivs = C.exDivisors,
         factor = C.factor,
         focus = C.focus,
         jacDet = jacobian, 
@@ -94,7 +125,7 @@ def _simplify(C, units, non_units, repl):
 
 # Given a chart C and a vertex v, construct the (monomial) subchart of C with 
 # respect to v. This comes from the intersection lattice of C. 
-def _construct_subchart(C, v): 
+def _construct_subchart(C, v, verbose=_verbose): 
     # Get the data
     A = C.AmbientSpace()
     divs = [A.coerce(d) for d in C.intLat.divisors]
@@ -114,14 +145,15 @@ def _construct_subchart(C, v):
     new_varbs = _safe_variables(C.variables, a)
 
     # Replace non_unit[k] with p*repl[k]
-    repl = [new_varbs[i] for i in range(len(non_units))]
+    repl = [new_varbs[i] for i in range(a)]
+    # TODO: Add a map to get the correct variable name.
 
     # Build the subchart
-    sub_C = _simplify(C, units, non_units, repl)
+    sub_C = _simplify(C, units, non_units, repl, verbose=verbose)
 
     # We modify the subchart just slightly. 
     # We give it an id from C
-    vert_to_str = lambda x, y: str(x) + y
+    vert_to_str = lambda x, y: str(x) + str(y)
     sub_C._id = int(str(C._id) + reduce(vert_to_str, v, ''))
     # We multiply by a factor of p
     rem = a - len(new_varbs)
@@ -147,10 +179,12 @@ class Chart():
         parent = None,
         path = None): 
 
+        # 'Hidden' attributes
         self._id = identity
         self._parent = parent
         self._subcharts = None
 
+        # 'Public' attributes
         self.coefficients = R
         self.variables = X
         self.atlas = atlas
@@ -165,18 +199,20 @@ class Chart():
         self.lastMap = lastMap
         self.path = path
 
+        # We make sure the intersection lattice can point back to the chart
         if intLat != None:
             self.intLat.chart = self
 
 
     def __repr__(self):
         cat_strings = lambda x, y: x + " " + str(y)
-        # Build strings
+        # Build strings to mimic Singular
         str_coeffs = "coefficients: %s\n" % self.coefficients
         str_num_vars = "number of vars: %s\n" % len(self.variables)
         str_b1_ord = "    block 1: ordering dp\n"
         str_names = "      names:" + reduce(cat_strings, self.variables, "")
         str_b2_ord = "\n    block 2: ordering C"
+        
         # Put everything together
         return str_coeffs + str_num_vars + str_b1_ord + str_names + str_b2_ord
 
@@ -201,12 +237,30 @@ class Chart():
         S = R.quotient(I)
         return S
 
+
     # Constructs the subcharts based on the intersection lattice.
-    def Subcharts(self, recompute=False):
+    def Subcharts(self, verbose=_verbose, recompute=False):
+        # If the subcharts have already been computed, then do not do extra 
+        # work if we do not need to.
         if not recompute and self._subcharts != None:
             return self._subcharts
+
+        # Construct the set of vertices
         verts = [v for level in self.intLat.vertices for v in level]
-        charts = tuple([_construct_subchart(self, v) for v in verts])
-        self._subcharts = charts
-        return charts
+
+        # Print statements for the user
+        list_polys = lambda x, y: str(x) + ",\n" + _indent + str(y)
+        if _verbose:
+            print "The intersection lattice contains:"
+            print "%s%s vertices," % (_indent, len(verts))
+            print "%s%s divisors." % (_indent, len(self.intLat.divisors))
+            print "The divisors are:"
+            print "%s%s" % (_indent, reduce(list_polys, self.intLat.divisors))
+            print "We construct a subchart for every vertex in the lattice."
+
+        # Visit every vertex and construct a corresponding (monomial) subchart.
+        charts = [_construct_subchart(self, v, verbose=verbose) for v in verts]
+        self._subcharts = tuple(charts)
+
+        return tuple(charts)
         
