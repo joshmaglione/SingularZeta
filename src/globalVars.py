@@ -24,3 +24,7 @@ _chart_num = lambda x: "Chart" + str(x) + ".ssi"
 
 # Variables for type checking in Sage
 _is_int = lambda x: isinstance(x, int) or isinstance(x, _int)
+
+
+# Variable for saving polynomial data
+_Lookup_Table = []
