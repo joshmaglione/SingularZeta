@@ -32,11 +32,6 @@ def _safe_variables(varbs, n):
     return tuple(new_varbs)
 
 
-# Given the divisors of the intersection lattice and the new variables, return 
-# a dictionary to the new variables.
-def _get_map(divs, varbs):
-    # TODO: Continue!
-
 # Given a list S of polynomials, return a set of variables, as strings, in the 
 # set S
 def _get_variable_support(S):
@@ -139,14 +134,13 @@ def _construct_subchart(C, v, verbose=_verbose):
 
     # Determine the variables in the divs.
     varbs = {x for d in divs for x in d.variables()}
-    a = min(n, len(varbs))
+    a = len(non_units)
 
     # Will replace non_unit[k] with new_varb[k].
     new_varbs = _safe_variables(C.variables, a)
 
     # Replace non_unit[k] with p*repl[k]
     repl = [new_varbs[i] for i in range(a)]
-    # TODO: Add a map to get the correct variable name.
 
     # Build the subchart
     sub_C = _simplify(C, units, non_units, repl, verbose=verbose)
@@ -156,7 +150,9 @@ def _construct_subchart(C, v, verbose=_verbose):
     vert_to_str = lambda x, y: str(x) + str(y)
     sub_C._id = int(str(C._id) + reduce(vert_to_str, v, ''))
     # We multiply by a factor of p
-    rem = a - len(new_varbs)
+    b = len(_get_variable_support(divs))
+    p = _var('p')
+    sub_C.jacDet *= p**b
 
     return sub_C
 

@@ -8,10 +8,18 @@
 __version__ = 0.5
 
 print "Loading..."
-from src.globalVars import _DEFAULT_INDENT as _indent
 
+
+from src.globalVars import _DEFAULT_INDENT as _indent
+from src.globalVars import _DEFAULT_VERBOSE as _verbose
+
+# Load the global variables that the user can change.  
 if not isinstance(_indent, str):
     raise TypeError("Global variable '_DEFAULT_INDENT' must be a string.")
+
+if not isinstance(_verbose, bool):
+    raise TypeError("Global variable '_DEFAULT_VERBOSE' must be set to boolean: True or False.")
+    
 
 # === This is very annoying during development =================================
 import sys as _sys
@@ -78,22 +86,18 @@ del Zeta_ver
 
 
 # 'from foo import *' leaves hidden functions hidden and brings it up to 
-# TensorSpace instead of TensorSpace.src
-# Load interface
+# foo instead of foo.src
 print _indent + "Importing functions."
 from src.atlasClass import *
 from src.chartClass import *
 from src.integrandClass import *
 from src.interfaceSingular import *
 from src.intLatticeClass import *
-from src.globalVars import _DEFAULT_VERBOSE as _verbose
+from src.chartClass import _construct_subchart
 
 
-# Load the global variables that the user can change.  
-if not isinstance(_verbose, bool):
-    raise TypeError("Global variable '_DEFAULT_VERBOSE' must be set to boolean: True or False.")
-else:
-    if _verbose:
+# Verify verbose printing
+if _verbose:
         print _indent + "Verbose printing turned on."
 
 
