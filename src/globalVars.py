@@ -10,8 +10,9 @@ from sage.rings.integer import Integer as _int
 
 # Variables for user settings. These can be changed without affecting the 
 # mathematics.
-_DEFAULT_VERBOSE = True         # Boolean
 _DEFAULT_INDENT = " "*4         # String
+_DEFAULT_USER_INPUT = False     # Boolean
+_DEFAULT_VERBOSE = True         # Boolean
 
 
 # Variables for Singular things

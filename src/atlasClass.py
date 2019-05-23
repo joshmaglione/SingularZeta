@@ -4,13 +4,16 @@
 #   Distributed under MIT License
 #
 
+from globalVars import _DEFAULT_INDENT as _indent
 from integrandClass import Integrand as _integrand
 from interfaceSingular import LoadChart as _load
 from parseEdges import _parse_edges, _get_total_charts, _get_leaves
 from sage.all import var as _var
 from sage.all import factor as _factor
 
-def _get_integrand(varbs, LT):
+# Given a list of variables and a boolean, build the root integrand.
+# Note: this is only for the root of the atlas. 
+def _build_integrand(varbs, LT):
     n = len(varbs)
     X = _var('X')
     f = X**2 + X - 2*n
@@ -22,12 +25,13 @@ def _get_integrand(varbs, LT):
         varbs = varbs[::-1]
     for k in range(rows):
         exponent = k - rows
-        factor = [varbs[choose(k) - 1], (exponent, 1)]
+        factor = [varbs[choose(k) - 1], [exponent, 1]]
         integrand.append(factor)
     if not LT:
         integrand = integrand[::-1]
-    return _integrand(tuple(integrand))
-
+    p = _var('p')
+    return _integrand(integrand, factor=[[1 - p**(-1), [-rows, 0]]])
+    
 
 class Atlas():
 
@@ -62,7 +66,7 @@ class Atlas():
 
         # TODO: Once the jacDet bug is fixed, uncomment the lines above.
         self.root = _load(1, direc, get_lat=False) # Cannot run Singular anymore
-        self.integrand = _get_integrand(self.root.variables, LT)
+        self.integrand = _build_integrand(self.root.variables, LT)
         for C in self.charts:
             C.atlas = self
             
@@ -80,10 +84,10 @@ class Atlas():
         add_up = lambda x, y: x + y 
         Nverts = reduce(add_up, map(chart_to_verts, self.charts))
         first = "An atlas over %s in %s dimensions.\n" % (ring, dim)
-        direct = "    Directory: %s\n" % (self.directory)
-        charts = "    Number of charts: %s\n" % (self.number_of_charts)
-        leaves = "    Number of leaves: %s\n" % (len(self.leaves))
-        integrals = "    Number of integrals: %s" % (Nverts)
+        direct = "%sDirectory: %s\n" % (_indent, self.directory)
+        charts = "%sNumber of charts: %s\n" % (_indent, self.number_of_charts)
+        leaves = "%sNumber of leaves: %s\n" % (_indent, len(self.leaves))
+        integrals = "%sNumber of integrals: %s" % (_indent, Nverts)
         return first + direct + charts + leaves + integrals
 
 

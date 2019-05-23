@@ -4,6 +4,7 @@
 #   Distributed under MIT License
 #
 
+from globalVars import _DEFAULT_USER_INPUT as _user_input
 from sage.all import var as _var
 from sage.all import AffineSpace as _affine_space
 from sage.all import QQ as _QQ
@@ -12,7 +13,7 @@ from parseSingularExpr import _parse_user_input
 # Given an ambient space A and a system of polynomials, attempt to either count 
 # the number of p-rational points on the corresponding variety or return data 
 # for a human to compute. 
-def _rational_points(A, S, user_input=False, label=''):
+def _rational_points(A, S, user_input=_user_input, label=''):
     Aff = _affine_space(len(A.gens()), _QQ, A.gens())
     d = Aff.dimension()
     variety = Aff.subscheme(S)

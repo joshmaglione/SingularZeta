@@ -4,6 +4,7 @@
 #   Distributed under MIT License
 #
 
+from globalVars import _DEFAULT_USER_INPUT as _user_input
 from sage.all import QQ as _QQ
 from sage.all import Set as _set
 from rationalPoints import _rational_points
@@ -52,17 +53,23 @@ class IntLattice():
         self.p_points = ppts
         self.vertices = verts
 
+
     def __repr__(self):
         add_up = lambda x, y: x + y 
         Nverts = reduce(add_up, map(len, self.vertices))
-        Nedges = reduce(add_up, map(len, self.edges))
+        Nedges = len(self.edges)
         return "An intersection lattice with %s vertices and %s edges." % (Nverts, Nedges)
 
-    def pRationalPoints(self, user_input=False, recompute=False):
+
+    # Determine the p-rational points of the varieties associated to the 
+    # intersection lattice. 
+    def pRationalPoints(self, user_input=_user_input, recompute=False):
+        # Some initial checks
         if (not recompute) and (self.p_points != None):
             return self.p_points
         if self.chart == None:
             raise AttributeError('Expected a chart associated to intersection lattice.')
+        # Construct the ambient space
         A = self.chart.AmbientSpace()
         rat_pts = []
         for i in range(len(self.vertices)):
@@ -72,7 +79,7 @@ class IntLattice():
                 polys = _get_defining_ideal(self.divisors, self.vertices[i][j])
                 rat_pt_dat = _rational_points(A, polys, user_input=user_input, label=lab)
                 row.append(rat_pt_dat)
-            rat_pts.append(row)
+            rat_pts.extend(row) # Want it to be flattened
         self.p_points = rat_pts
         return rat_pts
 

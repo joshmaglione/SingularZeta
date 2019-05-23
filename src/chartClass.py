@@ -6,8 +6,9 @@
 
 from globalVars import _is_int
 from globalVars import _DEFAULT_INDENT as _indent
+from globalVars import _DEFAULT_USER_INPUT as _user_input
 from globalVars import _DEFAULT_VERBOSE as _verbose
-from integrandClass import MapIntegrand as _get_integrand
+from integrandClass import MapIntegrand as _map_integrand
 from parseSingularExpr import _expr_to_terms
 from sage.all import expand as _expand
 from sage.all import factor as _factor
@@ -234,8 +235,17 @@ class Chart():
         return S
 
 
+    # If the chart comes from an atlas, then we know how to define the integral 
+    # from the root to the chart based on its data. This function will return 
+    # the integrand.
+    def Integrand(self):
+        if self.atlas == None:
+            raise ValueError("Chart does not come from an atlas; unsure how to define an integral.")
+        return _map_integrand(self.atlas, self)
+        
+
     # Constructs the subcharts based on the intersection lattice.
-    def Subcharts(self, verbose=_verbose, recompute=False):
+    def Subcharts(self, recompute=False, verbose=_verbose):
         # If the subcharts have already been computed, then do not do extra 
         # work if we do not need to.
         if not recompute and self._subcharts != None:
@@ -249,6 +259,7 @@ class Chart():
         if _verbose:
             print "The intersection lattice contains:"
             print "%s%s vertices," % (_indent, len(verts))
+            print "%s%s edges," % (_indent, len(self.intLat.edges))
             print "%s%s divisors." % (_indent, len(self.intLat.divisors))
             print "The divisors are:"
             print "%s%s" % (_indent, reduce(list_polys, self.intLat.divisors))
@@ -256,7 +267,39 @@ class Chart():
 
         # Visit every vertex and construct a corresponding (monomial) subchart.
         charts = [_construct_subchart(self, v, verbose=verbose) for v in verts]
+
+        if _verbose:
+            print "We are verifying that all subcharts are monomial..."
+        for C in charts:
+            if not C.IsMonomial():
+                raise AssertionError("We expected these subcharts to be monomial. Something must have gone wrong. If the code is correct, then the original chart is not locally monomial.")
+
         self._subcharts = tuple(charts)
 
+        if _verbose:
+            print _indent + "Passed."
+
         return tuple(charts)
-        
+
+
+    # Compute the integral for the zeta function on this chart
+    def ZetaIntegral(self, user_input=_user_input, verbose=_verbose):
+        if _verbose:
+            print "Constructing monomial subcharts."
+
+        # First we get the monomial subcharts
+        subcharts = self.Subcharts(verbose=verbose)
+
+        if _verbose:
+            print "Computing the p-rational points for each vertex in the intersection lattice. "
+
+        # Next we determine the p-rational points on the charts
+        p_rat_pts = self.intLat.pRationalPoints(user_input=_user_input)
+
+        if _verbose:
+            print "Constructing the integrands for each subchart."
+
+        # Now we determine the integrands for each subchart
+        integrands = tuple([_map_integrand(self.atlas, C) for C in subcharts])
+
+        return (subcharts, p_rat_pts, integrands)
