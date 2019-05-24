@@ -16,7 +16,6 @@ from sage.all import Ideal as _ideal
 from sage.all import PolynomialRing as _polyring
 from sage.all import Set as _set
 from sage.all import var as _var
-from util import _my_odom
 
 
 # Given a list of variables and an integer n, return an n-tuple of new, safe 

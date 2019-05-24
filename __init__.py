@@ -16,12 +16,16 @@ _sys.dont_write_bytecode = True
 
 
 from src.globalVars import _DEFAULT_INDENT as _indent
+from src.globalVars import _DEFAULT_LOAD_DB as _load
 from src.globalVars import _DEFAULT_USER_INPUT as _user_input
 from src.globalVars import _DEFAULT_VERBOSE as _verbose
 
 # Load the global variables that the user can change.  
 if not isinstance(_indent, str):
     raise TypeError("Global variable '_DEFAULT_INDENT' must be a string.")
+
+if not isinstance(_load, bool):
+    raise TypeError("Global variable '_DEFAULT_LOAD_DB' must be set to boolean: True or False.")
 
 if not isinstance(_user_input, bool):
     raise TypeError("Global variable '_DEFAULT_USER_INPUT' must be set to boolean: True or False.")
@@ -98,10 +102,10 @@ from src.chartClass import *
 from src.integrandClass import *
 from src.interfaceSingular import *
 from src.intLatticeClass import *
-from src.chartClass import _construct_subchart
 
 
 print _indent + "User defined default settings:"
+print _indent*2 + "Load database: %s" % (_load)
 print _indent*2 + "User input: %s" % (_user_input)
 print _indent*2 + "Verbose printing: %s" % (_verbose)
 
