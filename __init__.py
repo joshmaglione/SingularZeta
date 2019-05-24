@@ -14,18 +14,25 @@ import sys as _sys
 _sys.dont_write_bytecode = True
 # ==============================================================================
 
-
+# Load the global variables that the user can change.  
 from src.globalVars import _DEFAULT_INDENT as _indent
 from src.globalVars import _DEFAULT_LOAD_DB as _load
+from src.globalVars import _DEFAULT_p as _p
+from src.globalVars import _DEFAULT_t as _t
 from src.globalVars import _DEFAULT_USER_INPUT as _user_input
 from src.globalVars import _DEFAULT_VERBOSE as _verbose
 
-# Load the global variables that the user can change.  
 if not isinstance(_indent, str):
     raise TypeError("Global variable '_DEFAULT_INDENT' must be a string.")
 
 if not isinstance(_load, bool):
     raise TypeError("Global variable '_DEFAULT_LOAD_DB' must be set to boolean: True or False.")
+
+if not isinstance(_p, str):
+    raise TypeError("Global variable '_DEFAULT_p' must be a string.")
+
+if not isinstance(_t, str):
+    raise TypeError("Global variable '_DEFAULT_t' must be a string.")
 
 if not isinstance(_user_input, bool):
     raise TypeError("Global variable '_DEFAULT_USER_INPUT' must be set to boolean: True or False.")
@@ -62,7 +69,7 @@ _ = _singular.eval("1 + 1;")
 print _indent + "Loading Sage functions."
 from sage.all import var as _var
 _ = _var('x')
-f = x**2 - x
+f = x
 _ = f.roots()
 
 
@@ -107,6 +114,7 @@ from src.intLatticeClass import *
 print _indent + "User defined default settings:"
 print _indent*2 + "Load database: %s" % (_load)
 print _indent*2 + "User input: %s" % (_user_input)
+print _indent*2 + "Variable names: %s" % ([_p, _t])
 print _indent*2 + "Verbose printing: %s" % (_verbose)
 
 

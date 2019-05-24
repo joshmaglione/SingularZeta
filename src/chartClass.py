@@ -6,9 +6,11 @@
 
 from globalVars import _is_int
 from globalVars import _DEFAULT_INDENT as _indent
+from globalVars import _DEFAULT_p as _p
 from globalVars import _DEFAULT_USER_INPUT as _user_input
 from globalVars import _DEFAULT_VERBOSE as _verbose
 from integrandClass import MapIntegrand as _map_integrand
+from interfaceZeta import _mono_chart_to_gen_func
 from parseSingularExpr import _expr_to_terms
 from sage.all import expand as _expand
 from sage.all import factor as _factor
@@ -45,7 +47,7 @@ def _get_variable_support(S):
 # the expression to be monomial in the latest variables.
 def _simplify_expr(expr, units, non_units, repl):
     sys_varbs = _get_variable_support(units + non_units)
-    p = _var('p')
+    p = _var(_p)
     f = expr.factor_list()
     new_factors = []
     # Easier to compare polynomials as strings. This might bite me later.
@@ -103,7 +105,7 @@ def _simplify(C, units, non_units, repl, verbose=_verbose):
     all_polys = list(birat) + reduce(flatten, cone, []) + [jacobian]
     non_const = lambda x: not _is_int(x)
     new_varbs_str = _get_variable_support(filter(non_const, all_polys))
-    new_varbs = tuple([_var(x) for x in new_varbs_str if x != 'p'])
+    new_varbs = tuple([_var(x) for x in new_varbs_str if x != _p])
 
     sub_C = Chart(C.coefficients, new_varbs, 
         atlas = C.atlas,
@@ -153,7 +155,7 @@ def _construct_subchart(C, v, verbose=_verbose):
     sub_C._id = int(str(C._id) + reduce(vert_to_str, v, ''))
     # We multiply by a factor of p
     b = len(_get_variable_support(divs))
-    p = _var('p')
+    p = _var(_p)
     sub_C.jacDet *= p**b
 
     return sub_C
@@ -304,4 +306,8 @@ class Chart():
         build_int = lambda C: _map_integrand(self.atlas, C)
         integrands = tuple(map(build_int, subcharts))
 
-        return (subcharts, p_rat_pts, integrands)
+        chrt_int = zip(subcharts, integrands)
+        add_up = lambda x, y: x + y
+        gen_funcs = [_mono_chart_to_gen_func(t[0], t[1]) for t in chrt_int]
+
+        return reduce(add_up, gen_funcs, 0)

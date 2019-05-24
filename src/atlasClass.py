@@ -5,6 +5,9 @@
 #
 
 from globalVars import _DEFAULT_INDENT as _indent
+from globalVars import _DEFAULT_p as _p
+from globalVars import _DEFAULT_USER_INPUT as _input
+from globalVars import _DEFAULT_VERBOSE as _verbose
 from integrandClass import Integrand as _integrand
 from interfaceSingular import LoadChart as _load
 from parseEdges import _parse_edges, _get_total_charts, _get_leaves
@@ -29,7 +32,7 @@ def _build_integrand(varbs, LT):
         integrand.append(factor)
     if not LT:
         integrand = integrand[::-1]
-    p = _var('p')
+    p = _var(_p)
     return _integrand(integrand, factor=[[1 - p**(-1), [-rows, 0]]])
     
 
@@ -91,16 +94,10 @@ class Atlas():
         return first + direct + charts + leaves + integrals
 
 
-    # Returns a set of integers corresponding to the bad primes.
-    def BadPrimes(self):
-        primes = {}
-        for C in self.charts:
-            check, roots, consts = C.IsQuasiMonomial()
-            if not check:
-                print "Atlas has chart that is not quasi-monomial!"
-                return False
-            for k in consts:
-                flatten = lambda x: x[0]
-                bad_primes = map(flatten, k.factor())
-                primes.union(bad_primes)
-        return primes
+    # Returns the integral on the entire lattice
+    def Integral(self, user_input=_input, verbose=_verbose):
+        add_up_ints = lambda x, y: x + y.ZetaIntegral()
+        # Currently we do not have the intersection lattice of a chart with an 
+        # ambient space different from the standard affine space.
+        AVOID_BUG = lambda x: x.intLat != None
+        return reduce(add_up_ints, filter(AVOID_BUG, self.charts))

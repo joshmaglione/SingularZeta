@@ -5,6 +5,7 @@
 #
 
 from globalVars import _DEFAULT_INDENT as _indent
+from globalVars import _DEFAULT_p as _p
 from globalVars import _DEFAULT_USER_INPUT as _user_input
 from globalVars import _DEFAULT_VERBOSE as _verbose
 from globalVars import _Lookup_Table as _lookup
@@ -209,7 +210,7 @@ def _ask_user(variety, label):
     not_poly = {_var('n'), _var('N')}
     while need_input:
         print 'If not a polynomial in p, write N.'
-        exp_str = input('How many? Use p if needed.\n')
+        exp_str = input('How many? Use %s if needed.\n' % (_p))
         if exp_str in not_poly:
             need_input = False
             C = _var('C' + label)
@@ -230,7 +231,7 @@ def _rational_points(A, S, user_input=_user_input, label=''):
     Aff = _affine_space(len(A.gens()), _QQ, A.gens())
     d = Aff.dimension()
     variety = Aff.subscheme(S)
-    p = _var('p')
+    p = _var(_p)
     is_linear = lambda x: x.degree() == 1
 
     # Split the system into linears and non-linears. 

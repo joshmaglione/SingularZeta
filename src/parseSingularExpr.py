@@ -4,6 +4,7 @@
 #   Distributed under MIT License
 #
 
+from globalVars import _DEFAULT_p as _p
 from sage.all import PolynomialRing as _poly_ring
 from sage.all import QQ as _QQ
 from sage.all import var as _var
@@ -105,7 +106,7 @@ def _parse_user_input(inp):
         return _ZZ.coerce(int(inp))
     except:
         # Not an integer
-        R = _poly_ring(_QQ, 'p')
+        R = _poly_ring(_QQ, _p)
         return R(inp)
 
     

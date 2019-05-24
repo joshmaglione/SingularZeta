@@ -5,6 +5,7 @@
 #
 
 from globalVars import _is_int
+from globalVars import _DEFAULT_p as _p
 from parseSingularExpr import _term_to_factors, _str_to_vars
 from sage.all import factor as _factor
 from sage.all import var as _var
@@ -102,13 +103,13 @@ def _clean_integrand(integrand):
 # (after evaluting the p-adic absolute value) and the int_list without the 
 # p-powers.
 def _remove_p_powers(int_list):
-    is_p = lambda x: str(x[0]) == 'p'
+    is_p = lambda x: str(x[0]) == _p
     not_p = lambda x: not is_p(x)
     p_part = list(filter(is_p, int_list))
     if len(p_part) != 0:
         p_part = [[p_part[0][0], [-a for a in p_part[0][1]]]]
     else:
-        p_part = [[_var('p'), [0, 0]]]
+        p_part = [[_var(_p), [0, 0]]]
     return p_part, list(filter(not_p, int_list))
     
 
@@ -131,7 +132,7 @@ class Integrand():
         self.factor = _clean_integrand(factor + p_powers)
 
         # 'Hidden' attribute
-        self._term_dict = {str(T[0]): T[1] for T in self.list}
+        self._term_dict = {str(T[0]): T[1] for T in self.list} 
 
 
     def __repr__(self):
