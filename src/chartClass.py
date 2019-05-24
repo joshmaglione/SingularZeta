@@ -16,6 +16,7 @@ from sage.all import Ideal as _ideal
 from sage.all import PolynomialRing as _polyring
 from sage.all import Set as _set
 from sage.all import var as _var
+from sage.all import ZZ as _ZZ
 
 
 # Given a list of variables and an integer n, return an n-tuple of new, safe 
@@ -49,6 +50,7 @@ def _simplify_expr(expr, units, non_units, repl):
     new_factors = []
     # Easier to compare polynomials as strings. This might bite me later.
     conv_to_str = lambda x: str(x)
+    sage_int = lambda x: _ZZ.coerce(x)
 
     # Run through all the factors of expr
     for i in range(len(f)):
@@ -58,7 +60,7 @@ def _simplify_expr(expr, units, non_units, repl):
         if all(str(x) in sys_varbs for x in d.variables()):
             if str(d) in map(conv_to_str, units):
                 # If the factor is a unit, replace it with 1
-                new_factors.append([1, 1])
+                new_factors.append(map(sage_int, [1, 1]))
             else:
                 if str(d) in map(conv_to_str, non_units):
                     # If the factor is not a unit, replace it with p*z
@@ -70,7 +72,7 @@ def _simplify_expr(expr, units, non_units, repl):
                     # that this data corresponds to a locally monomial chart**, 
                     # we know this factor is just a unit. Therefore, we just 
                     # replace it with 1. 
-                    new_factors.append([1, 1])
+                    new_factors.append(map(sage_int, [1, 1]))
         else: 
             new_factors.append([d, f[i][1]])
 
@@ -299,6 +301,7 @@ class Chart():
             print "Constructing the integrands for each subchart."
 
         # Now we determine the integrands for each subchart
-        integrands = tuple([_map_integrand(self.atlas, C) for C in subcharts])
+        build_int = lambda C: _map_integrand(self.atlas, C)
+        integrands = tuple(map(build_int, subcharts))
 
         return (subcharts, p_rat_pts, integrands)
