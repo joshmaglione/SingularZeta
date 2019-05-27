@@ -180,10 +180,10 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
         lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert)
         random_varbs = [r_var, r_var2]
     else: 
-        # TODO: update once we can compute the intersection lattice
         lattice = None
         random_varbs = [r_var]
-        if verbose:
+        # TODO: update once we can compute the intersection lattice
+        if verbose and amb_fact != 0:
             print "Cannot compute intersection lattice yet due to non-trivial ambient space."
 
     # Clean up the Singular run

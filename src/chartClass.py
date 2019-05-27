@@ -59,7 +59,7 @@ def _simplify_expr(expr, units, non_units, repl):
         d = f[i][0]
         # First we check that all the variables are contained in the support of 
         # the system. 
-        if all(str(x) in sys_varbs for x in d.variables()):
+        if any(str(x) in sys_varbs for x in d.variables()):
             if str(d) in map(conv_to_str, units):
                 # If the factor is a unit, replace it with 1
                 new_factors.append(map(sage_int, [1, 1]))
@@ -96,6 +96,12 @@ def _simplify(C, units, non_units, repl, verbose=_verbose):
 
     # We update the cone.
     cone = [tuple(map(_simp_map, ineq)) for ineq in C.cone]
+
+    if verbose:
+        print "Old cone conditions:"
+        print _indent + str(C.cone)
+        print "New cone conditions:"
+        print _indent + str(cone)
 
     # Finally we update the Jacobian.
     jacobian = _simp_map(C.jacDet)
@@ -273,9 +279,10 @@ class Chart():
 
         if _verbose:
             print "We are verifying that all subcharts are monomial..."
-        for C in charts:
+        for i in range(len(charts)):
+            C = charts[i]
             if not C.IsMonomial():
-                raise AssertionError("We expected these subcharts to be monomial. Something must have gone wrong. If the code is correct, then the original chart is not locally monomial.")
+                raise AssertionError("We expected these subcharts to be monomial. Something must have gone wrong with subchart associated to vertex %s. If the code is correct, then the original chart is not locally monomial." % (verts[i]))
 
         self._subcharts = tuple(charts)
 

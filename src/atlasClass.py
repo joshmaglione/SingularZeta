@@ -100,4 +100,4 @@ class Atlas():
         # Currently we do not have the intersection lattice of a chart with an 
         # ambient space different from the standard affine space.
         AVOID_BUG = lambda x: x.intLat != None
-        return reduce(add_up_ints, filter(AVOID_BUG, self.charts))
+        return reduce(add_up_ints, filter(AVOID_BUG, self.charts), 0)
