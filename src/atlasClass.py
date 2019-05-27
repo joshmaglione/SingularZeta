@@ -95,9 +95,10 @@ class Atlas():
 
 
     # Returns the integral on the entire lattice
-    def Integral(self, user_input=_input, verbose=_verbose):
+    def ZetaIntegral(self, user_input=_input, verbose=_verbose):
         add_up_ints = lambda x, y: x + y.ZetaIntegral()
         # Currently we do not have the intersection lattice of a chart with an 
         # ambient space different from the standard affine space.
         AVOID_BUG = lambda x: x.intLat != None
         return reduce(add_up_ints, filter(AVOID_BUG, self.charts), 0)
+

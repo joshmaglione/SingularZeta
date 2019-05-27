@@ -14,7 +14,7 @@ _DEFAULT_INDENT = " "*4         # String
 _DEFAULT_LOAD_DB = True         # Boolean
 _DEFAULT_p = 'p'                # String
 _DEFAULT_t = 't'                # String
-_DEFAULT_USER_INPUT = False     # Boolean
+_DEFAULT_USER_INPUT = True      # Boolean
 _DEFAULT_VERBOSE = True         # Boolean
 
 

@@ -97,12 +97,6 @@ def _simplify(C, units, non_units, repl, verbose=_verbose):
     # We update the cone.
     cone = [tuple(map(_simp_map, ineq)) for ineq in C.cone]
 
-    if verbose:
-        print "Old cone conditions:"
-        print _indent + str(C.cone)
-        print "New cone conditions:"
-        print _indent + str(cone)
-
     # Finally we update the Jacobian.
     jacobian = _simp_map(C.jacDet)
 
@@ -311,10 +305,17 @@ class Chart():
 
         # Now we determine the integrands for each subchart
         build_int = lambda C: _map_integrand(self.atlas, C)
-        integrands = tuple(map(build_int, subcharts))
+        integrands = map(build_int, subcharts)
 
         chrt_int = zip(subcharts, integrands)
-        add_up = lambda x, y: x + y
         gen_funcs = [_mono_chart_to_gen_func(t[0], t[1]) for t in chrt_int]
 
-        return reduce(add_up, gen_funcs, 0)
+        # Now we multiply by the p-rational points.
+        assert len(p_rat_pts) == len(gen_funcs)
+        rat_int = zip(p_rat_pts, gen_funcs)
+        mult_up = lambda x: x[0][0]*x[1]
+        add_up = lambda x, y: x + y
+
+        integrals = map(mult_up, rat_int)
+
+        return reduce(add_up, integrals, 0)
