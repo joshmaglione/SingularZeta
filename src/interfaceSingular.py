@@ -177,7 +177,7 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
         lat_divs = _parse_list(sing_lat_divs_str)
 
         # Put all the data together
-        lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert)
+        lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=focus)
         random_varbs = [r_var, r_var2]
     else: 
         lattice = None

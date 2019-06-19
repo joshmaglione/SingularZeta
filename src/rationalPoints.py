@@ -232,9 +232,13 @@ def _rational_points(A, S, user_input=_user_input, label=''):
     d = Aff.dimension()
     variety = Aff.subscheme(S)
     p = _var(_p)
-    is_linear = lambda x: x.degree() == 1
+    
+    # If S is trivial, then return the trivial count.
+    if S == [0]: 
+        return p**d
 
     # Split the system into linears and non-linears. 
+    is_linear = lambda x: x.degree() == 1
     lin_polys = filter(is_linear, S)
     nonlin_polys = filter(lambda x: not is_linear(x), S)
 
