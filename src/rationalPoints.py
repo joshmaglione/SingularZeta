@@ -235,7 +235,7 @@ def _rational_points(A, S, user_input=_user_input, label=''):
     
     # If S is trivial, then return the trivial count.
     if S == [0]: 
-        return p**d
+        return tuple([p**d, variety])
 
     # Split the system into linears and non-linears. 
     is_linear = lambda x: x.degree() == 1

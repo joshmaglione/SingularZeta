@@ -133,7 +133,7 @@ def _construct_subchart(C, v, verbose=_verbose):
     # Even though these are supposed to be sets, there's something about them 
     # that makes them not act like sets. You can only use difference and union 
     # to add or subtract elements...
-    units = [divs[k - 1] for k in _set(range(1, n+1)).difference(v)]
+    units = [divs[k - 1] for k in _set(range(n)).difference(v)]
     non_units = [divs[k - 1] for k in v]
 
     # Determine the variables in the divs.
@@ -255,7 +255,7 @@ class Chart():
             return self._subcharts
 
         # Construct the set of vertices
-        verts = [v for level in self.intLat.vertices for v in level]
+        verts = self.intLat.vertices
 
         # Print statements for the user
         list_polys = lambda x, y: str(x) + ",\n" + _indent + str(y)
@@ -312,7 +312,10 @@ class Chart():
 
         # Now we multiply by the p-rational points.
         assert len(p_rat_pts) == len(gen_funcs)
+        print(p_rat_pts)
+        print(gen_funcs)
         rat_int = zip(p_rat_pts, gen_funcs)
+        print(rat_int)
         mult_up = lambda x: x[0][0]*x[1]
         add_up = lambda x, y: x + y
 

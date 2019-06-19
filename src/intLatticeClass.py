@@ -6,6 +6,7 @@
 
 from globalVars import _DEFAULT_USER_INPUT as _input
 from globalVars import _DEFAULT_VERBOSE as _verbose
+from sage.all import AffineSpace as _affine
 from sage.all import QQ as _QQ
 from sage.all import Set as _set
 from rationalPoints import _rational_points
@@ -105,18 +106,18 @@ class IntLattice():
 
         # Construct the ambient space
         A = self.chart.AmbientSpace()
+        hyp_surf = reduce(lambda x, y: x*y, self.divisors, A.coerce(1))
+        # We restrict to a potentially smaller affine space. 
+        res_aff = _affine(len(hyp_surf.variables()), _QQ, hyp_surf.variables())
 
         # Now we get the number of p-rational points. 
         rat_pts = []
         for i in range(len(self.vertices)):
-            row = []
-            for j in range(len(self.vertices[i])):
-                lab = str(self.chart._id) + '_' + str(i) + '_' + str(j)
-                polys = _get_defining_ideal(self.divisors, self.vertices[i][j])
-                rat_pt_dat = _rational_points(A, polys, user_input=user_input, 
-                    label=lab)
-                row.append(rat_pt_dat)
-            rat_pts.extend(row) # Want it to be flattened
+            lab = str(self.chart._id) + '_' + str(i)
+            polys = _get_defining_ideal(self.divisors, self.vertices[i])
+            rat_pt_dat = _rational_points(res_aff, polys, user_input=user_input,
+                label=lab)
+            rat_pts.append(rat_pt_dat) # Want it to be flattened
         self.p_points = rat_pts
 
         # Build a function from the set of vertices to the intersection counts.
