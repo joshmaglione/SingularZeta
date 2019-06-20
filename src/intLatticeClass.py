@@ -4,11 +4,13 @@
 #   Distributed under MIT License
 #
 
+from globalVars import _DEFAULT_p as _p
 from globalVars import _DEFAULT_USER_INPUT as _input
 from globalVars import _DEFAULT_VERBOSE as _verbose
 from sage.all import AffineSpace as _affine
 from sage.all import QQ as _QQ
 from sage.all import Set as _set
+from sage.all import var as _var
 from rationalPoints import _rational_points
 
 # Parses the list of vertices. Changes from {0, 1}-tuple to a set.
@@ -76,6 +78,31 @@ def _get_defining_ideal(divs, v):
     return polys
 
 
+def _inc_exc(n, verts, edges, counts, d):
+    level = {n}
+    factor = _var(_p)**(-d)
+    total = counts[n][0]
+    next_level = _set()
+    sign = -1
+    while len(level) > 0:
+        for k in level:
+            # First get all the edges containing vertex k
+            edge_set = filter(lambda x: k in x, edges)
+            # Now we put all the vertices together yielding all the nieghbors
+            neighbors = reduce(lambda x, y: x + y, edge_set, _set())
+            # Grab the neighbors whose numbers are strictly larger
+            next_neigh = filter(lambda x: x > k, neighbors)
+            next_level = next_level + _set(next_neigh)
+        # We add up the counts for the next neighbors
+        part_tot = reduce(lambda x, y: x + y, [counts[i][0] for i in next_level], 0)
+        total += sign*part_tot
+        # We get ready to recurse.
+        sign *= -1
+        level = next_level
+        next_level = _set([])
+    return (factor*total).simplify().factor()
+
+
 class IntLattice():
 
     def __init__(self, comps, divs, edges, verts, ppts=None):
@@ -86,7 +113,9 @@ class IntLattice():
         self.edges = edges
         self.p_points = ppts
         self.vertices = verts
-        self.vertexToPoints = None
+
+        # Hidden
+        self._vertexToPoints = None
 
 
     def __repr__(self):
@@ -105,10 +134,11 @@ class IntLattice():
             raise AttributeError('Expected a chart associated to intersection lattice.')
 
         # Construct the ambient space
-        A = self.chart.AmbientSpace()
+        A = self.chart.AmbientSpace() # Polynomial ring
         hyp_surf = reduce(lambda x, y: x*y, self.divisors, A.coerce(1))
         # We restrict to a potentially smaller affine space. 
         res_aff = _affine(len(hyp_surf.variables()), _QQ, hyp_surf.variables())
+        diff = res_aff.dimension() - len(self.divisors)
 
         # Now we get the number of p-rational points. 
         rat_pts = []
@@ -121,6 +151,9 @@ class IntLattice():
         self.p_points = rat_pts
 
         # Build a function from the set of vertices to the intersection counts.
+        n = len(self.vertices)
+        int_count = [_inc_exc(k, self.vertices, self.edges, rat_pts, diff) for k in range(n)]
+        self._vertexToPoints = int_count
         return rat_pts
 
 

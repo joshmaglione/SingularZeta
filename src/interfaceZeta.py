@@ -122,6 +122,6 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
     else:
         var_change = {_var('Z') : p_val(c_varbs[0])}
     
-    zed = ((1 - p**(-1))**(-n)*(S.evaluate())).subs(var_change).factor().simplify().factor()
+    zed = ((1 - p**(-1))**(-n)*(S.evaluate())).factor().subs(var_change).simplify().factor()
     
     return zed

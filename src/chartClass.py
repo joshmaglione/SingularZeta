@@ -298,7 +298,8 @@ class Chart():
             print "Computing the p-rational points for each vertex in the intersection lattice. "
 
         # Next we determine the p-rational points on the charts
-        p_rat_pts = self.intLat.pRationalPoints(user_input=_user_input)
+        _ = self.intLat.pRationalPoints(user_input=_user_input)
+        p_rat_pts = self.intLat._vertexToPoints
 
         if _verbose:
             print "Constructing the integrands for each subchart."
@@ -312,11 +313,8 @@ class Chart():
 
         # Now we multiply by the p-rational points.
         assert len(p_rat_pts) == len(gen_funcs)
-        print(p_rat_pts)
-        print(gen_funcs)
         rat_int = zip(p_rat_pts, gen_funcs)
-        print(rat_int)
-        mult_up = lambda x: x[0][0]*x[1]
+        mult_up = lambda x: x[0]*x[1]
         add_up = lambda x, y: x + y
 
         integrals = map(mult_up, rat_int)
