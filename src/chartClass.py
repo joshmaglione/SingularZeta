@@ -125,6 +125,9 @@ def _simplify(C, units, non_units, repl, verbose=_verbose):
 # Given a chart C and a vertex v, construct the (monomial) subchart of C with 
 # respect to v. This comes from the intersection lattice of C. 
 def _construct_subchart(C, v, verbose=_verbose): 
+    if verbose:
+        print("%sConstructing the subchart from vertex: %s" % (_indent, v))
+
     # Get the data
     A = C.AmbientSpace()
     divs = [A.coerce(d) for d in C.intLat.divisors]
@@ -135,16 +138,33 @@ def _construct_subchart(C, v, verbose=_verbose):
     # to add or subtract elements...
     units = [divs[k - 1] for k in _set(range(n)).difference(v)]
     non_units = [divs[k - 1] for k in v]
+    a = len(non_units)
+    b = len(units)
+    
+    if verbose:
+        print("%sUnits: %s" % (_indent*2, units))
+        print("%sNon-units: %s" % (_indent*2, non_units))
 
     # Determine the variables in the divs.
     varbs = {x for d in divs for x in d.variables()}
-    a = len(non_units)
 
     # Will replace non_unit[k] with new_varb[k].
-    new_varbs = _safe_variables(C.variables, a)
+    new_varbs = _safe_variables(C.variables, a + b)
 
     # Replace non_unit[k] with p*repl[k]
-    repl = [new_varbs[i] for i in range(a)]
+    repl = [new_varbs[i] for i in range(a + b)]
+
+    if verbose:
+        print("%sApplying the following change of variables:" % (_indent*2))
+        add_up = lambda x, y: x + y
+        if b > 0:
+            dummy_vars = ["a" + str(i) for i in range(b)]
+            chg_var_u = lambda x: "%s%s -> %s + %s*%s\n" % (_indent*3, x[0], x[2], _p, x[1])
+            print(reduce(add_up, map(chg_var_u, zip(units, repl[a:], dummy_vars)), "")[:-1])
+        if a > 0:
+            chg_var_nu = lambda x: "%s%s -> %s*%s\n" % (_indent*3, x[0], _p, x[1])
+            print(reduce(add_up, map(chg_var_nu, zip(non_units, repl[:a])), "")[:-1])
+        
 
     # Build the subchart
     sub_C = _simplify(C, units, non_units, repl, verbose=verbose)
@@ -271,7 +291,16 @@ class Chart():
         # Visit every vertex and construct a corresponding (monomial) subchart.
         charts = [_construct_subchart(self, v, verbose=verbose) for v in verts]
 
-        if _verbose:
+        if verbose:
+            print("Now we determine the p-rational points.")
+
+        # Next we determine the p-rational points on the charts
+        _ = self.intLat.pRationalPoints(user_input=_user_input)
+        p_rat_pts = self.intLat._vertexToPoints
+        # TODO: Multiply the integrands by the correct factor from the 
+        # p-rational points. 
+
+        if verbose:
             print "We are verifying that all subcharts are monomial..."
         for i in range(len(charts)):
             C = charts[i]
@@ -296,10 +325,6 @@ class Chart():
 
         if _verbose:
             print "Computing the p-rational points for each vertex in the intersection lattice. "
-
-        # Next we determine the p-rational points on the charts
-        _ = self.intLat.pRationalPoints(user_input=_user_input)
-        p_rat_pts = self.intLat._vertexToPoints
 
         if _verbose:
             print "Constructing the integrands for each subchart."

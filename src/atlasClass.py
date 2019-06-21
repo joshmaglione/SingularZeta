@@ -40,7 +40,11 @@ class Atlas():
 
     # Currently, we have LT until more information is given concerning the 
     # variables. 
-    def __init__(self, direc, LT=True):
+    def __init__(self, direc, LT=True, verbose=_verbose):
+        if verbose:
+            print("Loading atlas from %s" % (direc))
+            print("="*79)
+
         # First we "clean up" the direc string.
         if direc[-1] != "/":
             direc = direc + "/"
@@ -69,10 +73,22 @@ class Atlas():
 
         # TODO: Once the jacDet bug is fixed, uncomment the lines above.
         self.root = _load(1, direc, get_lat=False) # Cannot run Singular anymore
+
+        if verbose:
+            print("Successfully loaded atlas.")
+            print("="*79)
+
         self.integrand = _build_integrand(self.root.variables, LT)
         for C in self.charts:
             C.atlas = self
-            
+
+        if verbose:
+            print(self)
+            print("Main integral to solve:\n%s" % (self.integrand))
+            print("where S is the set of all %s satisfying:" % (list(self.root.variables)))
+            to_ineq = lambda x: "%s%s | %s\n" % (_indent, x[0], x[1])
+            print(reduce(lambda x, y: x + y, map(to_ineq, self.root.cone), ""))
+
 
     def __repr__(self):
         ring = self.charts[0].coefficients
