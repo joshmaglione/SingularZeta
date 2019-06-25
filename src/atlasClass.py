@@ -9,6 +9,7 @@ from globalVars import _DEFAULT_p as _p
 from globalVars import _DEFAULT_USER_INPUT as _input
 from globalVars import _DEFAULT_VERBOSE as _verbose
 from integrandClass import Integrand as _integrand
+from integrandClass import _integral_printout
 from interfaceSingular import LoadChart as _load
 from parseEdges import _parse_edges, _get_total_charts, _get_leaves
 from sage.all import var as _var
@@ -84,10 +85,7 @@ class Atlas():
 
         if verbose:
             print(self)
-            print("Main integral to solve:\n%s" % (self.integrand))
-            print("where S is the set of all %s satisfying:" % (list(self.root.variables)))
-            to_ineq = lambda x: "%s%s | %s\n" % (_indent, x[0], x[1])
-            print(reduce(lambda x, y: x + y, map(to_ineq, self.root.cone), ""))
+            _integral_printout(self.root, integrand=self.integrand)
 
 
     def __repr__(self):

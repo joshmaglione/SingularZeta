@@ -78,10 +78,9 @@ def _get_defining_ideal(divs, v):
     return polys
 
 
-def _inc_exc(n, verts, edges, counts, d):
+def _inc_exc(n, verts, edges, counts):
     level = {n}
-    factor = _var(_p)**(-d)
-    total = counts[n][0]
+    total = counts[n][0] + _var(_p)*0
     next_level = _set()
     sign = -1
     while len(level) > 0:
@@ -100,7 +99,7 @@ def _inc_exc(n, verts, edges, counts, d):
         sign *= -1
         level = next_level
         next_level = _set([])
-    return (factor*total).simplify().factor()
+    return total.simplify().factor()
 
 
 class IntLattice():
@@ -138,7 +137,6 @@ class IntLattice():
         hyp_surf = reduce(lambda x, y: x*y, self.divisors, A.coerce(1))
         # We restrict to a potentially smaller affine space. 
         res_aff = _affine(len(hyp_surf.variables()), _QQ, hyp_surf.variables())
-        diff = res_aff.dimension() - len(self.divisors)
 
         # Now we get the number of p-rational points. 
         rat_pts = []
@@ -152,7 +150,7 @@ class IntLattice():
 
         # Build a function from the set of vertices to the intersection counts.
         n = len(self.vertices)
-        int_count = [_inc_exc(k, self.vertices, self.edges, rat_pts, diff) for k in range(n)]
+        int_count = [_inc_exc(k, self.vertices, self.edges, rat_pts) for k in range(n)]
         self._vertexToPoints = int_count
         return rat_pts
 

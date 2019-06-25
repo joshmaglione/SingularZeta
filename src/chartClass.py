@@ -10,6 +10,8 @@ from globalVars import _DEFAULT_p as _p
 from globalVars import _DEFAULT_USER_INPUT as _user_input
 from globalVars import _DEFAULT_VERBOSE as _verbose
 from integrandClass import MapIntegrand as _map_integrand
+from integrandClass import Integrand as _integrand
+from integrandClass import _integral_printout
 from interfaceZeta import _mono_chart_to_gen_func
 from parseSingularExpr import _expr_to_terms
 from sage.all import expand as _expand
@@ -107,13 +109,13 @@ def _simplify(C, units, non_units, repl, verbose=_verbose):
     new_varbs_str = _get_variable_support(filter(non_const, all_polys))
     new_varbs = tuple([_var(x) for x in new_varbs_str if x != _p])
 
-    sub_C = Chart(C.coefficients, new_varbs, 
+    sub_C = Chart(C.coefficients, new_varbs, # TODO: Need to be careful here!
         atlas = C.atlas,
         biratMap = birat,
         cent = C.cent,
         cone = cone,
         exDivs = C.exDivisors,
-        factor = C.factor,
+        factor = C.ambientFactor,
         focus = C.focus,
         jacDet = jacobian, 
         lastMap = C.lastMap,
@@ -145,9 +147,6 @@ def _construct_subchart(C, v, verbose=_verbose):
         print("%sUnits: %s" % (_indent*2, units))
         print("%sNon-units: %s" % (_indent*2, non_units))
 
-    # Determine the variables in the divs.
-    varbs = {x for d in divs for x in d.variables()}
-
     # Will replace non_unit[k] with new_varb[k].
     new_varbs = _safe_variables(C.variables, a + b)
 
@@ -178,6 +177,9 @@ def _construct_subchart(C, v, verbose=_verbose):
     p = _var(_p)
     sub_C.jacDet *= p**b
 
+    if verbose:
+        print("%sMultiplying Jacobian by %s" % (_indent*2, p**b))
+
     return sub_C
 
 
@@ -203,6 +205,7 @@ class Chart():
         self._id = identity
         self._parent = parent
         self._subcharts = None
+        self._integralFactor = 1
 
         # 'Public' attributes
         self.coefficients = R
@@ -212,7 +215,7 @@ class Chart():
         self.cent = cent
         self.cone = cone
         self.exDivisors = exDivs
-        self.factor = factor
+        self.ambientFactor = factor
         self.focus = focus
         self.intLat = intLat
         self.jacDet = jacDet
@@ -251,9 +254,9 @@ class Chart():
     # Returns the ambient space as a (quotient) polynomial ring.
     def AmbientSpace(self):
         R = _polyring(self.coefficients, self.variables)
-        if self.factor == 0:
+        if self.ambientFactor == 0:
             return R
-        I = _ideal(R, self.factor)
+        I = _ideal(R, self.ambientFactor)
         S = R.quotient(I)
         return S
 
@@ -291,14 +294,17 @@ class Chart():
         # Visit every vertex and construct a corresponding (monomial) subchart.
         charts = [_construct_subchart(self, v, verbose=verbose) for v in verts]
 
-        if verbose:
-            print("Now we determine the p-rational points.")
+        if _verbose:
+            print "Computing the p-rational points for each vertex in the intersection lattice. "
 
         # Next we determine the p-rational points on the charts
         _ = self.intLat.pRationalPoints(user_input=_user_input)
         p_rat_pts = self.intLat._vertexToPoints
-        # TODO: Multiply the integrands by the correct factor from the 
-        # p-rational points. 
+
+        # We run through the charts and multiply the integralFactor by the 
+        # corresponding p-rational count 
+        for i in range(len(verts)):
+            charts[i]._integralFactor *= p_rat_pts[i]
 
         if verbose:
             print "We are verifying that all subcharts are monomial..."
@@ -317,31 +323,32 @@ class Chart():
 
     # Compute the integral for the zeta function on this chart
     def ZetaIntegral(self, user_input=_user_input, verbose=_verbose):
-        if _verbose:
-            print "Constructing monomial subcharts."
+        # First decide if the chart is monomial
+        if self.IsMonomial():
+            subcharts = [self]
+        else:
+            if _verbose:
+                print "Constructing monomial subcharts."
 
-        # First we get the monomial subcharts
-        subcharts = self.Subcharts(verbose=verbose)
+            # First we get the monomial subcharts
+            subcharts = self.Subcharts(verbose=verbose)
 
         if _verbose:
-            print "Computing the p-rational points for each vertex in the intersection lattice. "
-
-        if _verbose:
-            print "Constructing the integrands for each subchart."
+            print "Constructing integral."
 
         # Now we determine the integrands for each subchart
         build_int = lambda C: _map_integrand(self.atlas, C)
         integrands = map(build_int, subcharts)
 
-        chrt_int = zip(subcharts, integrands)
-        gen_funcs = [_mono_chart_to_gen_func(t[0], t[1]) for t in chrt_int]
+        if _verbose:
+            print("Solving %s integrals." % (len(integrands)))
 
-        # Now we multiply by the p-rational points.
-        assert len(p_rat_pts) == len(gen_funcs)
-        rat_int = zip(p_rat_pts, gen_funcs)
-        mult_up = lambda x: x[0]*x[1]
+        chrt_int = zip(subcharts, integrands)
+        gen_funcs = []
+        for t in chrt_int:
+            _integral_printout(t[0])
+            gen_funcs.append(_mono_chart_to_gen_func(t[0], t[1]))
+
         add_up = lambda x, y: x + y
 
-        integrals = map(mult_up, rat_int)
-
-        return reduce(add_up, integrals, 0)
+        return reduce(add_up, gen_funcs, 0)

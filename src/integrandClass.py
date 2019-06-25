@@ -6,9 +6,20 @@
 
 from globalVars import _is_int
 from globalVars import _DEFAULT_p as _p
+from globalVars import _DEFAULT_INDENT as _indent
 from parseSingularExpr import _term_to_factors, _str_to_vars
 from sage.all import factor as _factor
 from sage.all import var as _var
+
+# A function to printout the integral needed to solve, given a chart.
+def _integral_printout(chart, integrand=None):
+    if integrand == None:
+        integrand = chart.Integrand()
+    print("Main integral to solve:\n%s" % (integrand))
+    print("where S is the set of all %s satisfying:" % 
+        (list(chart.variables)))
+    to_ineq = lambda x: "%s%s | %s\n" % (_indent, x[0], x[1])
+    print(reduce(lambda x, y: x + y, map(to_ineq, chart.cone), ""))
 
 # Given two tuples of variables, return the map from one tuple to the other.
 def _get_birat_map(vars1, vars2):
@@ -30,7 +41,7 @@ def _remove_negative(list_of_terms):
 
 # Given a list of (old) variables, a birational map, an (old) integrand, and a 
 # jacobian, return the updated integrand with the birational map and jacobian.
-def _get_integrand(varbs, biratMap, integrand, jacDet):
+def _get_integrand(varbs, biratMap, integrand, jacDet, integralFactor):
     # Build the actual birational map
     birat_map = _get_birat_map(varbs, biratMap)
     init_integrand = integrand
@@ -45,7 +56,9 @@ def _get_integrand(varbs, biratMap, integrand, jacDet):
     else:
         int_jac = []
 
-    return Integrand(int_mapped + int_jac, factor=integrand.factor)
+    factor = integrand.factor + [[integralFactor, [1, 0]]]
+
+    return Integrand(int_mapped + int_jac, factor=factor)
 
 
 # Given an atlas and a chart, modify the integrand for the chart according to 
@@ -57,7 +70,7 @@ def MapIntegrand(atlas, chart):
     if atlas.directory != chart.atlas.directory:
         raise ValueError("Expected the chart to be contained in the given atlas.")
     return _get_integrand(atlas.root.variables, chart.birationalMap, 
-        atlas.integrand, chart.jacDet)
+        atlas.integrand, chart.jacDet, chart._integralFactor)
 
 
 # Given a list of factors corresponding to the integrand, return a list of the 
