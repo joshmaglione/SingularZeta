@@ -109,7 +109,7 @@ def _simplify(C, units, non_units, repl, verbose=_verbose):
     new_varbs_str = _get_variable_support(filter(non_const, all_polys))
     new_varbs = tuple([_var(x) for x in new_varbs_str if x != _p])
 
-    sub_C = Chart(C.coefficients, new_varbs, # TODO: Need to be careful here!
+    sub_C = Chart(C.coefficients, new_varbs, 
         atlas = C.atlas,
         biratMap = birat,
         cent = C.cent,
@@ -138,8 +138,8 @@ def _construct_subchart(C, v, verbose=_verbose):
     # Even though these are supposed to be sets, there's something about them 
     # that makes them not act like sets. You can only use difference and union 
     # to add or subtract elements...
-    units = [divs[k - 1] for k in _set(range(n)).difference(v)]
-    non_units = [divs[k - 1] for k in v]
+    units = [divs[k] for k in _set(range(n)).difference(v)]
+    non_units = [divs[k] for k in v]
     a = len(non_units)
     b = len(units)
     
@@ -240,17 +240,6 @@ class Chart():
         return str_coeffs + str_num_vars + str_b1_ord + str_names + str_b2_ord
 
 
-    # Decides if the cone data is monomial.
-    def IsMonomial(self):
-        flatten = lambda x: x[0]*x[1]
-        def _is_monomial(x):
-            s = str(flatten(x))
-            if "+" in s or "-" in s[1:]:
-                return False
-            return True
-        return all(map(_is_monomial, self.cone))
-
-
     # Returns the ambient space as a (quotient) polynomial ring.
     def AmbientSpace(self):
         R = _polyring(self.coefficients, self.variables)
@@ -261,6 +250,12 @@ class Chart():
         return S
 
 
+    # Prints out the string for the corresponding integral for this chart: the 
+    # integrand plus the cone conditions in a human-friendly way. :)
+    def ConeConditions(self):
+        _integral_printout(self)
+
+
     # If the chart comes from an atlas, then we know how to define the integral 
     # from the root to the chart based on its data. This function will return 
     # the integrand.
@@ -269,6 +264,17 @@ class Chart():
             raise ValueError("Chart does not come from an atlas; unsure how to define an integral.")
         return _map_integrand(self.atlas, self)
         
+    
+    # Decides if the cone data is monomial.
+    def IsMonomial(self):
+        flatten = lambda x: x[0]*x[1]
+        def _is_monomial(x):
+            s = str(flatten(x))
+            if "+" in s or "-" in s[1:]:
+                return False
+            return True
+        return all(map(_is_monomial, self.cone))
+
 
     # Constructs the subcharts based on the intersection lattice.
     def Subcharts(self, recompute=False, verbose=_verbose):
@@ -311,7 +317,7 @@ class Chart():
         for i in range(len(charts)):
             C = charts[i]
             if not C.IsMonomial():
-                raise AssertionError("We expected these subcharts to be monomial. Something must have gone wrong with subchart associated to vertex %s. If the code is correct, then the original chart is not locally monomial." % (verts[i]))
+                raise AssertionError("Expected these subcharts to be monomial. Something must have gone wrong with the subchart associated to vertex %s. If the code is correct, then the original chart is not locally monomial." % (verts[i]))
 
         self._subcharts = tuple(charts)
 
@@ -329,7 +335,6 @@ class Chart():
         else:
             if _verbose:
                 print "Constructing monomial subcharts."
-
             # First we get the monomial subcharts
             subcharts = self.Subcharts(verbose=verbose)
 

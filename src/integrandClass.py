@@ -6,6 +6,7 @@
 
 from globalVars import _is_int
 from globalVars import _DEFAULT_p as _p
+from globalVars import _DEFAULT_t as _t
 from globalVars import _DEFAULT_INDENT as _indent
 from parseSingularExpr import _term_to_factors, _str_to_vars
 from sage.all import factor as _factor
@@ -15,11 +16,12 @@ from sage.all import var as _var
 def _integral_printout(chart, integrand=None):
     if integrand == None:
         integrand = chart.Integrand()
-    print("Main integral to solve:\n%s" % (integrand))
+    print("The corresponding integral:\n%s" % (integrand))
     print("where S is the set of all %s satisfying:" % 
         (list(chart.variables)))
     to_ineq = lambda x: "%s%s | %s\n" % (_indent, x[0], x[1])
     print(reduce(lambda x, y: x + y, map(to_ineq, chart.cone), ""))
+
 
 # Given two tuples of variables, return the map from one tuple to the other.
 def _get_birat_map(vars1, vars2):
@@ -38,6 +40,7 @@ def _remove_negative(list_of_terms):
         else:
             new_terms.append(term)
     return new_terms
+    
 
 # Given a list of (old) variables, a birational map, an (old) integrand, and a 
 # jacobian, return the updated integrand with the birational map and jacobian.
@@ -178,3 +181,21 @@ class Integrand():
         for x in self.list:
             yield x
     
+
+    # Returns the factor as a function of p: the part outside the integral.
+    def pFactor(self):
+        # Given a list x = [expr, (a, b)], return (expr)^a*(expr)^(bs).
+        # We call the first factor the "real" factor and the second factor the 
+        # "complex" factor. No, it's not particularly accurate.
+        def convert_to_expr(x): 
+            real_factor = x[0]**(x[1][0])
+            if x[1][1] != 0:
+                if x[0] != _var(_p):
+                    raise AssertionError("Integrand is not as expected. Contains a factor of the form %s." % (x[0]**(x[1][1]*_var('s'))))
+                else:
+                    complex_factor = _var(_t)**(-x[1][1])
+            else:
+                complex_factor = 1
+            return real_factor * complex_factor
+        mult = lambda x, y: x*y
+        return reduce(mult, map(convert_to_expr, self.factor), 1)
