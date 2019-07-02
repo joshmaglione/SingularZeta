@@ -14,15 +14,16 @@ from interfaceSingular import LoadChart as _load
 from parseEdges import _parse_edges, _get_total_charts, _get_leaves
 from sage.all import var as _var
 from sage.all import factor as _factor
+from sage.all import ZZ as _ZZ
 
 # Given a list of variables and a boolean, build the root integrand.
 # Note: this is only for the root of the atlas. 
 def _build_integrand(varbs, LT):
     n = len(varbs)
-    X = _var('X')
-    f = X**2 + X - 2*n
-    roots = [T[0] for T in _factor(f).roots()]
-    rows = max(roots)
+    s = _ZZ.coerce(1 + 8*n) # In Sage 'int' does not have a sqrt method...
+    if (s.sqrt())**2 != s:
+        raise AssertionError("Number of variables is not an expected.")
+    rows = (int(s.sqrt()) - 1)//2
     choose = lambda x: (x + 1)*(x + 2)//2
     integrand = []
     if not LT:

@@ -63,16 +63,6 @@ print _indent + "Loading Singular."
 from sage.all import singular as _singular
 _ = _singular.eval("1 + 1;")
 
-
-# Is this needed??????????????????????????????????????
-# Load up the 'roots' command
-print _indent + "Loading Sage functions."
-from sage.all import var as _var
-_ = _var('x')
-f = x
-_ = f.roots()
-
-
 # See if Zeta is already imported.
 print _indent + "Loading Zeta."
 try:
@@ -119,4 +109,4 @@ print _indent*2 + "Verbose printing: %s" % (_verbose)
 
 
 # Sage is still on python2.
-print "SingularZeta %s loaded." % (__version__)
+print "SingularZeta v%s loaded." % (__version__)

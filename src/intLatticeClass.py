@@ -4,6 +4,7 @@
 #   Distributed under MIT License
 #
 
+from globalVars import _DEFAULT_INDENT as _indent
 from globalVars import _DEFAULT_p as _p
 from globalVars import _DEFAULT_USER_INPUT as _input
 from globalVars import _DEFAULT_VERBOSE as _verbose
@@ -157,7 +158,7 @@ class IntLattice():
 
 
 # There are a lot of redundancies in the intersection lattices. We remove them.
-def _remove_redundancies(comps, divs, edges, verts, focus=None):
+def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose):
     div_num = len(divs)
     # First we define functions to do the work for us.
     # The first function checks if the polynomial d is a monomial.
@@ -196,6 +197,12 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None):
             mark[i] = len(clean_divs)
             clean_divs.append(divs[i])
 
+    if verbose:
+        print "Started with the following divisors:"
+        print "%s%s" % (_indent, divs)
+        print "Ended with:"
+        print "%s%s" % (_indent, clean_divs)
+
     # Maps a vertex {a, b, ...} to {mark[a], mark[b], ...}
     marked_verts = map(lambda v: _set(map(lambda i: mark[i], v)), verts)
     # Decides if -1 is in the vertex, and if so, returns True
@@ -205,6 +212,13 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None):
     # Clean vertices and comps by removing all subsets with -1
     cleaned_vert_comp = filter(lambda x: not -1 in x[0], vert_comp)
     clean_verts, clean_comps = tuple(zip(*cleaned_vert_comp))
+
+    if verbose:
+        print "Started with the following vertices:"
+        print "%s%s" % (_indent, verts)
+        print "Ended with:"
+        print "%s%s" % (_indent, clean_verts)
+
 
     # Given an edge that should not be removed, we relabel it.
     def relabel_edge(e):
@@ -223,6 +237,12 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None):
 
     marked_edges = map(edge_marker, edges)
     clean_edges = filter(lambda x: len(x) != 1, marked_edges)
+
+    if verbose:
+        print "Started with the following edges:"
+        print "%s%s" % (_indent, edges)
+        print "Ended with:"
+        print "%s%s" % (_indent, clean_edges)
 
     return IntLattice(clean_comps, clean_divs, clean_edges, clean_verts)
 

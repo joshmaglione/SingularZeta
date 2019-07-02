@@ -7,13 +7,15 @@
 from globalVars import _DEFAULT_INDENT as _indent
 from globalVars import _DEFAULT_p as _p
 from globalVars import _DEFAULT_USER_INPUT as _user_input
-from globalVars import _DEFAULT_VERBOSE as _verbose
+# from globalVars import _DEFAULT_VERBOSE as _verbose
 from globalVars import _Lookup_Table as _lookup
 from sage.all import var as _var
 from sage.all import AffineSpace as _affine_space
 from sage.all import QQ as _QQ
 from sage.all import Word as _word
 from parseSingularExpr import _parse_user_input
+
+_verbose = False
 
 # Given the ambient space and a system of polynomials, we return a lookup key 
 # and the variables in (the ambient space, the defining ideal, and the system).

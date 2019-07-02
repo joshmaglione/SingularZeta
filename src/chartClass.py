@@ -329,6 +329,10 @@ class Chart():
 
     # Compute the integral for the zeta function on this chart
     def ZetaIntegral(self, user_input=_user_input, verbose=_verbose):
+        if verbose: 
+            print "="*79
+            print "Solving the integral for Chart %s." % (self._id)
+
         # First decide if the chart is monomial
         if self.IsMonomial():
             subcharts = [self]
@@ -351,7 +355,10 @@ class Chart():
         chrt_int = zip(subcharts, integrands)
         gen_funcs = []
         for t in chrt_int:
-            _integral_printout(t[0])
+            if verbose:
+                print "-"*79
+                print "Solving the integral for Subchart %s." % (t[0]._id)
+                _integral_printout(t[0])
             gen_funcs.append(_mono_chart_to_gen_func(t[0], t[1]))
 
         add_up = lambda x, y: x + y

@@ -92,21 +92,21 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
 
     if verbose:
         print "Started with the following data."
-        print _indent + "Variables: %s" % (list(C.variables))
-        print _indent + "Cone data: %s\n" % (C.cone)
+        print "%sVariables: %s" % (_indent, list(C.variables))
+        print "%sCone data: %s\n" % (_indent, C.cone)
         print "Cleaned it up to the following."
-        print _indent + "Variables: %s" % (c_varbs)
-        print _indent + "Cone data: %s\n" % (c_cone)
+        print "%sVariables: %s" % (_indent, c_varbs)
+        print "%sCone data: %s\n" % (_indent, c_cone)
 
     # Get the matrix of inequalities so Polyhedron can read it
     cone_mat = _cone_mat(c_varbs, c_cone)
     P = _polyhedron(ieqs=cone_mat)
     n = len(c_varbs)
-    R = _polyring(_QQ,'Z', n)
+    R = _polyring(_QQ, 'Z', n)
 
     if verbose:
-        print("Running Zeta via the polyhedron:")
-        print("%s" % (_matrix(cone_mat)))
+        print "Running Zeta via the polyhedron:"
+        print "%s" % (_matrix(cone_mat))
 
     # Run Zeta
     S = _Zeta_smurf.from_polyhedron(P, R)
@@ -128,12 +128,12 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
         var_change = {_var('Z') : p_val(c_varbs[0])}
     
     if verbose:
-        print("Applying the following change of variables:")
+        print "Applying the following change of variables:"
         if n > 1: 
             for i in range(n):
-                print("%s%s -> %s" % (_indent, c_varbs[i], var_change[_var('Z' + str(i))]))
+                print "%s%s -> %s" % (_indent, c_varbs[i], var_change[_var('Z' + str(i))])
         else:
-            print("%s%s -> %s" % (_indent, c_varbs[0], var_change[_var('Z')]))
+            print "%s%s -> %s" % (_indent, c_varbs[0], var_change[_var('Z')])
 
     zed = I.pFactor() * (1 - p**(-1))**n * S.evaluate()
     zed = zed.subs(var_change).simplify().factor()
