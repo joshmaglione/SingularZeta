@@ -75,7 +75,7 @@ def _get_defining_ideal(divs, v):
         return [0]
     polys = []
     for k in v:
-        polys.append(divs[k-1])
+        polys.append(divs[k])
     return polys
 
 
