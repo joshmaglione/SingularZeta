@@ -136,6 +136,7 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
             print "%s%s -> %s" % (_indent, c_varbs[0], var_change[_var('Z')])
 
     zed = I.pFactor() * (1 - p**(-1))**n * S.evaluate()
+    if zed == 0:
+        return 0
     zed = zed.subs(var_change).simplify().factor()
-    
     return zed

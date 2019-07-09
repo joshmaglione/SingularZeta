@@ -148,6 +148,9 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
 
     # Get the focus
     sing_foc_str = _SING.eval("print(focus);").replace(",", "").split("\n")
+    # TODO: Eventually remove this work around when chart is fixed
+    if num == 53 and "n4_neu" in direc:
+        sing_foc_str.append("y(1)")
     focus = _parse_list_wrapped(sing_foc_str)
 
     # Get the info read for the intersection lattice
@@ -179,6 +182,7 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
         # Put all the data together
         lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=focus)
         random_varbs = [r_var, r_var2]
+        print lattice
     else: 
         lattice = None
         random_varbs = [r_var]

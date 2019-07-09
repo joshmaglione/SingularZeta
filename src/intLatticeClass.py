@@ -100,6 +100,8 @@ def _inc_exc(n, verts, edges, counts):
         sign *= -1
         level = next_level
         next_level = _set([])
+    if total == 0:
+        return 0
     return total.simplify().factor()
 
 

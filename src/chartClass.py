@@ -306,6 +306,7 @@ class Chart():
         # Next we determine the p-rational points on the charts
         _ = self.intLat.pRationalPoints(user_input=_user_input)
         p_rat_pts = self.intLat._vertexToPoints
+        print self.intLat._vertexToPoints
 
         # We run through the charts and multiply the integralFactor by the 
         # corresponding p-rational count 
