@@ -207,8 +207,18 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
 
     # Maps a vertex {a, b, ...} to {mark[a], mark[b], ...}
     marked_verts = map(lambda v: _set(map(lambda i: mark[i], v)), verts)
+
+    # TODO: remove this when the bugged chart is fixed!
+    if focus != None:
+        # Get the indices of the divisors in the focus. 
+        indices = list(map(lambda x: clean_divs.index(x), filter(lambda x: x in focus, clean_divs))) 
+        # Get only the vertices with all the divisors in the focus
+        vert_in_foc = filter(lambda x: all(y in x for y in indices), verts)
+    else: 
+        vert_in_foc = verts
+
     # Decides if -1 is in the vertex, and if so, returns True
-    verts_to_remove = map(lambda x: -1 in x, marked_verts)
+    verts_to_remove = map(lambda x: (-1 in x) and not (x in vert_in_foc), marked_verts)
 
     vert_comp = zip(marked_verts, comps)
     # Clean vertices and comps by removing all subsets with -1
