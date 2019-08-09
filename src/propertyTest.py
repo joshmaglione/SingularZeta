@@ -8,7 +8,7 @@
 #   1. Stanislav Atanasov, Nathan Kaplan, Benjamin Krakoff, and Julian Menzel,
 #      Counting Finite Index Subrings of Z^n, https://arxiv.org/abs/1609.06433.
 #   2. Ricky Ini Liu, Counting subrings of Z^n of index k, J. Combin. Theory 
-#      Ser. A, 114 (2007), no. 2, 278–299.
+#      Ser. A, 114 (2007), no. 2, 278--299.
 #
 
 from globalVars import _is_int
@@ -41,11 +41,11 @@ def IsLocalSubringZF_Zn(Z, n, unital=True, Taylor=True, verbose=_verbose):
 
     # Make sure we can handle the input Z. 
     try:
-        if len(Z.variables()) != 2:
-            raise ValueError("Expected input to be a symbolic function in two variables.")
-        if not _p in Z.variables() or not _t in Z.variables:
+        if len(Z.variables()) > 2:
+            raise ValueError("Expected input to be a symbolic function in at most two variables.")
+        if not all(map(lambda x: str(x) in [_p, _t], Z.variables())):
             raise ValueError("Unsure which variable is which. Please use %s for p and %s for p^-s." % (_p, _t))
-    except:
+    except AttributeError:
         raise TypeError("Expected to receive a symbolic function.")
 
     # Define the variables as symbols
@@ -55,7 +55,7 @@ def IsLocalSubringZF_Zn(Z, n, unital=True, Taylor=True, verbose=_verbose):
     # Theorems for the local unital zeta functions up to n = 4.
     local2 = lambda X, Y: 1/(1 - Y)
     local3 = lambda X, Y: (1 - Y**2)**2/((1 - Y)**3*(1 - X*Y**3))
-    local4N = lambda X, Y: 1 + 4*Y + 2*Y**2 + (4*X − 3)*Y**3 + (5*X − 1)*Y**4 + (X**2 - 5*X)*Y**5 + (3*X**2 - 4*X)*Y**6 - 2*X**2*Y**7 - 4*X**2*Y**8 - X**2*Y**9 
+    local4N = lambda X, Y: 1 + 4*Y + 2*Y**2 + (4*X - 3)*Y**3 + (5*X - 1)*Y**4 + (X**2 - 5*X)*Y**5 + (3*X**2 - 4*X)*Y**6 - 2*X**2*Y**7 - 4*X**2*Y**8 - X**2*Y**9 
     local4D = lambda X, Y: (1 - Y)**2 * (1 - X**2*Y**4) * (1 - X**3*Y**6)
     local4 = lambda X, Y: local4N(X, Y) / local4D(X, Y)
     local_zeta = [local2, local3, local4]
@@ -81,8 +81,8 @@ def IsLocalSubringZF_Zn(Z, n, unital=True, Taylor=True, verbose=_verbose):
         if verbose:
             print "Testing candidate local zeta function against the local unital zeta function for Z^%s" % (n)
         zeta = local_zeta[n - 2]
-        diff = (zeta(p, t) - Z).simplify().factor().simplify()
-        are_equal = diff == 0
+        diff = (zeta(p, t) - Z).simplify()
+        are_equal = (diff == 0)
         if are_equal:
             return True
         else:
@@ -103,10 +103,10 @@ def IsLocalSubringZF_Zn(Z, n, unital=True, Taylor=True, verbose=_verbose):
         matching = True
         while matching and k < 6:
             k_term = kth_Taylor(Z, k)
-            if k_term - zeta_terms[k] == 0:
+            if k_term - zeta_terms[k](n, k) == 0:
                 tests['Taylor-t-' + str(k)] = True
             else:
-                tests['Taylor-t-' + str(k)] = {"target": zeta_terms[k], "candidate": k_term}
+                tests['Taylor-t-' + str(k)] = {"target": zeta_terms[k](n, k), "candidate": k_term}
                 matching = False
             k += 1
 
