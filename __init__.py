@@ -99,7 +99,8 @@ from src.chartClass import *
 from src.integrandClass import *
 from src.interfaceSingular import *
 from src.intLatticeClass import *
-from src.propertyTest import *
+from src.localZFTest import *
+from src.propertyTests import *
 
 
 print _indent + "User defined default settings:"
