@@ -103,10 +103,10 @@ def IsLocalSubringZF_Zn(Z, n, unital=True, Taylor=True, verbose=_verbose):
         matching = True
         while matching and k < 6:
             k_term = kth_Taylor(Z, k)
-            if k_term - zeta_terms[k](n, k) == 0:
+            if k_term - zeta_terms[k](n, p) == 0:
                 tests['Taylor-t-' + str(k)] = True
             else:
-                tests['Taylor-t-' + str(k)] = {"target": zeta_terms[k](n, k), "candidate": k_term}
+                tests['Taylor-t-' + str(k)] = {"target": zeta_terms[k](n, p), "candidate": k_term}
                 matching = False
             k += 1
 

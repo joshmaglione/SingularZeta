@@ -149,6 +149,14 @@ class IntLattice():
             rat_pt_dat = _rational_points(res_aff, polys, user_input=user_input,
                 label=lab)
             rat_pts.append(rat_pt_dat) # Want it to be flattened
+
+        # TODO: Once Hannover fixes this bug, remove this code.
+        # BUG on chart 66 set the last entry to 0.
+        if self.chart._id == 66 and "n4_" in self.chart.atlas.directory:
+            for k in [0, 2, 3, 4]:
+                new_entry = (0, rat_pts[k][1])
+                rat_pts[k] = new_entry
+
         self.p_points = rat_pts
 
         # Build a function from the set of vertices to the intersection counts.
