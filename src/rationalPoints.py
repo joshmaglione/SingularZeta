@@ -166,7 +166,7 @@ def _save_to_lookup(A, S, key, count, verbose=_verbose):
 
 # Given a system of polynomials, check to see if the support of the polynomials 
 # are disjoint.
-def _check_split_support(S):
+def _split_support(S):
     varbs = [f.variables() for f in S]
     i = 0
     while i < len(varbs):
@@ -183,7 +183,7 @@ def _check_split_support(S):
 #   1. are binomial, 
 #   2. have nonzero constant coefficient, and
 #   3. have a variable of degree 1.
-def _check_binom_system(S):
+def _binom_system(S):
     not_binom = lambda x: x.number_of_terms() != 2
     zero_const = lambda x: x.constant_coefficient() == 0
 
@@ -249,26 +249,39 @@ def _rational_points(A, S, user_input=_user_input, label=''):
         N = p**(d - len(S))
     else:
         # Nonlinear system
-        # First we check if there's a possibility that we can solve this
-        # At the moment, I can only think of a nice binomial system where the 
-        # support of the nonlinear binomials are disjoint.
-        feasible = lambda x: _check_split_support(x) and _check_binom_system(x)
-        if feasible(nonlin_polys):
-            get_num_vars = lambda x, y: x + len(y.variables())
-            num_vars = reduce(get_num_vars, nonlin_polys, 0)
-            N = (p - 1)**(num_vars - len(nonlin_polys))
-            N *= p**(d - num_vars - len(lin_polys))
+        
+        # We substitute the linear terms in because this is can easily be done, 
+        # and then we call our function again: with only nonlinear polynomials.
+        if len(lin_polys) > 0:
+            const_term = lambda f: f.subs({f.variables()[0] : 0})
+            sub_dict = {f.variables()[0] : -1*const_term(f) for f in lin_polys}
+            new_sys = map(lambda x: x.subs(sub_dict), nonlin_polys)
+            new_vars = filter(lambda x: not x in sub_dict.keys(), Aff.gens())
+            new_aff = _affine_space(len(new_vars), _QQ, new_vars)
+            N = _rational_points(new_aff, new_sys, 
+                user_input=user_input, 
+                label=label)[0]
         else:
-            # First we look up our table
-            check, data = _check_saved_table(Aff, S)
-            if check: 
-                N = data
+            # First we check if there's a possibility that we can solve this
+            # I can only think of a nice binomial system where the 
+            # support of the nonlinear binomials are disjoint.
+            feasible = lambda x: _split_support(x) and _binom_system(x)
+            if feasible(nonlin_polys):
+                get_num_vars = lambda x, y: x + len(y.variables())
+                num_vars = reduce(get_num_vars, nonlin_polys, 0)
+                N = (p - 1)**(num_vars - len(nonlin_polys))
+                N *= p**(d - num_vars)
             else:
-                # At this stage it is not contained in our table, so we continue
-                if user_input:
-                    N = _ask_user(variety, label)
-                    _save_to_lookup(Aff, S, data, N)
+                # First we look up our table
+                check, data = _check_saved_table(Aff, S)
+                if check: 
+                    N = data
                 else:
-                    N = _var('C' + label)
+                    # It is not contained in our table, so we continue
+                    if user_input:
+                        N = _ask_user(variety, label)
+                        _save_to_lookup(Aff, S, data, N)
+                    else:
+                        N = _var('C' + label)
     
     return tuple([N, variety])
