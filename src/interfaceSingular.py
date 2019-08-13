@@ -187,6 +187,10 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
         if verbose and amb_fact != 0:
             print "Cannot compute intersection lattice yet due to non-trivial ambient space."
 
+    # TODO: When the bug for chart 66 is fixed, remove this.
+    if 'n4_' in direc and num == 66:
+        lattice = None
+
     # Clean up the Singular run
     for v in random_varbs:
         _ = _SING.eval("kill %s;" % (v))

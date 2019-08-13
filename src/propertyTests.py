@@ -12,12 +12,21 @@ from globalVars import _DEFAULT_VERBOSE as _verbose
 from integrandClass import _get_integrand, _integral_printout
 from integrandClass import Integrand as _integrand 
 from interfaceZeta import _clean_cone_data, _cone_mat, _mono_chart_to_gen_func
+from sage.all import AffineSpace as _Aff
+from sage.all import GF as _GF
 from sage.all import Matrix as _matrix
 from sage.all import Polyhedron as _polyhedron
 from sage.all import PolynomialRing as _polyring
+from sage.all import Primes as _Primes
 from sage.all import QQ as _QQ
+from sage.all import symbolic_expression as _symb_expr
 from sage.all import var as _var
+from sage.all import ZZ as _ZZ
 from Zeta.smurf import SMURF as _Zeta_smurf
+
+################################################################################
+#   An integral test
+################################################################################
 
 def _trivial_cone(C, I, verbose=_verbose):
     # Clean up the variables and cone data
@@ -137,3 +146,72 @@ def IntegralTests(A, cone_condition=True, integrand=True):
     # ambient space different from the standard affine space.
     AVOID_BUG = lambda x: x.intLat != None
     return reduce(add_up_ints, filter(AVOID_BUG, A.charts), 0)
+
+################################################################################
+################################################################################
+
+
+################################################################################
+#   A p-rational point test
+################################################################################
+
+def _count_p(tup, p):
+    target = tup[0]
+    S = tup[1]
+    K = _GF(p)
+    S_K = S.change_ring(K)
+    target_p = target.subs({_var(_p) : p})
+    return len(S_K.rational_points()) == target_p
+
+def _vertex_p(target, vertex, divisor, p):
+    divisors = map(lambda f: _symb_expr(f), divisor)
+    varbs = reduce(lambda x, y: x*y, divisors, 1).variables()
+    A = _Aff(len(varbs), _GF(p), varbs)
+    sys_on = [divisors[k] for k in vertex]
+    sys_off = [divisors[k] for k in range(len(divisor)) if not k in vertex]
+    # We need to use tuple to remove extra info that sage carries.
+    get_points = lambda S: set(map(lambda pt : tuple(pt), A.subscheme(S).rational_points()))
+    points_off = reduce(lambda x,y: y.union(x), map(get_points, sys_off), set())
+    points_on = get_points(sys_on)
+    relevant_points = points_on.difference(points_off)
+    target_p = target.subs({_var(_p) : p})
+    return target_p == len(relevant_points)
+
+
+def pRationalPointChartTest(C, primes_excluded=[2], bound=20, verbose=_verbose):
+    I = C.intLat
+    p = _ZZ.coerce(2)
+
+    if verbose:
+        print "Checking the number of F_p-points on the listed varieties are correct."
+        if C.atlas != None:
+            print "Chart: %s," % (C._id)
+            print "Atlas: %s," % (C.atlas.directory)
+        print "%sExcluding primes: %s," % (_indent, primes_excluded)
+        print "%sBound: %s," % (_indent, bound)
+        print "%sNumber of varieties: %s" % (_indent, len(I.vertices))
+
+    while p < bound:
+        if not p in primes_excluded:
+            for tup in I.pRationalPoints():
+                if not _count_p(tup, p):
+                    if verbose:
+                        print "The following entry is incorrect for p = %s:\n%s" % (p, tup)
+                    raise AssertionError("Failed the test. If there is a bad prime, consider excluding it.")
+            for k in range(len(I.vertices)):
+                target = I._vertexToPoints[k]
+                vertex = I.vertices[k]
+                if not _vertex_p(target, vertex, I.divisors, p):
+                    if verbose:
+                        print "The following vertex has incorrent point count for p = %s:\n%s%s" % (p, _indent, vertex)
+                    raise AssertionError("Failed the test. If there is a bad prime, consider excluding it.")
+        p = _Primes().next(p)
+
+    return True
+
+def pRationalPointTest(A, primes_excluded=[2], bound=20, verbose=_verbose):
+    return all(map(lambda C: pRationalPointChartTest(C, 
+        primes_excluded=primes_excluded,
+        bound=bound,
+        verbose=verbose),
+        A.charts))
