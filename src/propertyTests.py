@@ -156,7 +156,7 @@ def IntegralTests(A, cone_condition=True, integrand=True):
 ################################################################################
 
 def _count_p(tup, p):
-    target = tup[0]
+    target = _symb_expr(tup[0])
     S = tup[1]
     K = _GF(p)
     S_K = S.change_ring(K)
@@ -174,7 +174,7 @@ def _vertex_p(target, vertex, divisor, p):
     points_off = reduce(lambda x,y: y.union(x), map(get_points, sys_off), set())
     points_on = get_points(sys_on)
     relevant_points = points_on.difference(points_off)
-    target_p = target.subs({_var(_p) : p})
+    target_p = _symb_expr(target).subs({_var(_p) : p})
     return target_p == len(relevant_points)
 
 
@@ -185,8 +185,8 @@ def pRationalPointChartTest(C, primes_excluded=[2], bound=20, verbose=_verbose):
     if verbose:
         print "Checking the number of F_p-points on the listed varieties are correct."
         if C.atlas != None:
-            print "Chart: %s," % (C._id)
-            print "Atlas: %s," % (C.atlas.directory)
+            print "%sChart: %s," % (_indent, C._id)
+            print "%sAtlas: %s," % (_indent, C.atlas.directory)
         print "%sExcluding primes: %s," % (_indent, primes_excluded)
         print "%sBound: %s," % (_indent, bound)
         print "%sNumber of varieties: %s" % (_indent, len(I.vertices))
