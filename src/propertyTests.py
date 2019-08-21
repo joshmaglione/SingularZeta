@@ -203,7 +203,7 @@ def pRationalPointChartTest(C, primes_excluded=[2], bound=20, verbose=_verbose):
                 vertex = I.vertices[k]
                 if not _vertex_p(target, vertex, I.divisors, p):
                     if verbose:
-                        print "The following vertex has incorrent point count for p = %s:\n%s%s" % (p, _indent, vertex)
+                        print "The following vertex has incorrect point count for p = %s:\n%s%s" % (p, _indent, vertex)
                     raise AssertionError("Failed the test. If there is a bad prime, consider excluding it.")
         p = _Primes().next(p)
 

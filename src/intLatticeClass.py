@@ -254,7 +254,7 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
 
 
 # A wrapper for IntLattice for charts. It will digest certain data differently.
-def _parse_lattice_data(comps, divs, edges, verts, focus=None):
+def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True):
     # Parse the data individually
     newComps = _parse_components(comps)
     newDivs = _parse_divisors(divs)
@@ -262,4 +262,26 @@ def _parse_lattice_data(comps, divs, edges, verts, focus=None):
     contains_emptyset = lambda L: {} in L
     newEdges = _parse_edges(edges, verts, empty=contains_emptyset(newVerts))
     
-    return _remove_redundancies(newComps, newDivs, newEdges, newVerts, focus=focus)
+    if sanity:
+        for i in range(len(newVerts)):
+            for j in range(i+1, len(newVerts)):
+                # Check that the two statements are logically equivalent.
+                assert _set([i, j]) in newEdges == newVerts[i] in newVerts[j]
+        print "Passed sanity check 1."
+
+    I = _remove_redundancies(newComps, newDivs, newEdges, newVerts, focus=focus)
+
+    if sanity:
+        embedding = lambda f: newDivs.index(f)
+        for i in range(len(I.vertices)):
+            u = I.vertices[i]
+            old_u = _set(map(lambda x: embedding(I.divisors[x]), list(u)))
+            # Check that there is a corresponding vertex.
+            assert old_u in newVerts
+            for j in range(i+1, len(I.vertices)):
+                v = I.vertices[j]
+                # Check that the two statements are logically equivalent.
+                assert _set([i, j]) in newEdges == u in v
+        print "Passed sanity check 1."
+
+    return I
