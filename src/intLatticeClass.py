@@ -29,7 +29,7 @@ def _parse_vertices(vert_list):
     new_verts = [map(build_subset, level) for level in vert_list]
     # Want to include the empty intersection when no focus.
     if new_verts[0] == []:
-        new_verts[0] = [{}]
+        new_verts[0] = [_set()]
     
     # Now we flatten the vertices since the size of the set determines the level
     return reduce(lambda x, y: x + y, new_verts, [])
@@ -47,7 +47,7 @@ def _parse_divisors(div_list):
 def _parse_edges(edge_list, vert_list, empty=True):
     vert_flat = reduce(lambda x, y: x + y, vert_list, [])
     if empty:
-        vert_flat = [{}] + vert_flat
+        vert_flat = [_set()] + vert_flat
     new_edges = []
 
     # Replace the edges with a list of subsets of the form {v1, v2}
@@ -55,13 +55,13 @@ def _parse_edges(edge_list, vert_list, empty=True):
         level = E[0]
         v1 = vert_list[level-2][E[2]-1]
         v2 = vert_list[level-1][E[1]-1]
-        edge = {vert_flat.index(v1), vert_flat.index(v2)}
+        edge = [vert_flat.index(v1), vert_flat.index(v2)]
         new_edges.append(edge)
     if empty:
         for v in vert_list[1]:
-            new_edges.append({0, vert_flat.index(v)})
+            new_edges.append([0, vert_flat.index(v)])
 
-    return new_edges
+    return map(lambda x: _set(x), new_edges)
 
 # Parses the list of components from Singular.
 def _parse_components(comps):
@@ -255,18 +255,22 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
 
 # A wrapper for IntLattice for charts. It will digest certain data differently.
 def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True):
+    has_empty = lambda X: bool(_set() in X)
     # Parse the data individually
     newComps = _parse_components(comps)
     newDivs = _parse_divisors(divs)
     newVerts = _parse_vertices(verts)
     contains_emptyset = lambda L: {} in L
-    newEdges = _parse_edges(edges, verts, empty=contains_emptyset(newVerts))
-    
+    newEdges = _parse_edges(edges, verts, empty=has_empty(newVerts))
+
     if sanity:
         for i in range(len(newVerts)):
+            u = newVerts[i]
             for j in range(i+1, len(newVerts)):
-                # Check that the two statements are logically equivalent.
-                assert _set([i, j]) in newEdges == newVerts[i] in newVerts[j]
+                v = newVerts[j]
+                if len(u) + 1 == len(v):
+                    # Check that the two statements are logically equivalent.
+                    assert bool(_set([i, j]) in newEdges) == bool(u.issubset(v))
         print "Passed sanity check 1."
 
     I = _remove_redundancies(newComps, newDivs, newEdges, newVerts, focus=focus)
@@ -280,8 +284,9 @@ def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True):
             assert old_u in newVerts
             for j in range(i+1, len(I.vertices)):
                 v = I.vertices[j]
-                # Check that the two statements are logically equivalent.
-                assert _set([i, j]) in newEdges == u in v
-        print "Passed sanity check 1."
+                if len(u) + 1 == len(v):
+                    # Check that the two statements are logically equivalent.
+                    assert bool(_set([i, j]) in I.edges) == bool(u.issubset(v))
+        print "Passed sanity check 2."
 
     return I
