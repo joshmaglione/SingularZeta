@@ -113,6 +113,7 @@ def _zeta_solve(C, verbose=_verbose, integ=True, cone=True):
         print "Constructing integral."
 
     if integ:
+        # Removes the integrand plus the factor (1 - p^-1)^k
         temp_integrand = _integrand([[1, (1, 0)]])
     else:
         temp_integrand = C.atlas.integrand
@@ -140,12 +141,20 @@ def _zeta_solve(C, verbose=_verbose, integ=True, cone=True):
 
     return reduce(add_up, gen_funcs, 0)
 
-def IntegralTests(A, cone_condition=True, integrand=True):
+
+def IntegralTests(A, chart_filter=None, cone_condition=True, integrand=True):
     add_up_ints = lambda x, y: x + _zeta_solve(y, cone=cone_condition, integ=integrand)
     # Currently we do not have the intersection lattice of a chart with an 
     # ambient space different from the standard affine space.
     AVOID_BUG = lambda x: x.intLat != None
-    return reduce(add_up_ints, filter(AVOID_BUG, A.charts), 0)
+    if chart_filter == None:
+        wrap = lambda x: True
+    else:
+        if not isinstance(chart_filter, type(lambda x: x)):
+            raise TypeError("Expected chart_filter to be a function compatible with filter.")
+        wrap = chart_filter
+    relevant_charts = filter(wrap, filter(AVOID_BUG, A.charts))
+    return reduce(add_up_ints, relevant_charts, 0)
 
 ################################################################################
 ################################################################################

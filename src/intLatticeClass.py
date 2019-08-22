@@ -200,11 +200,11 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
             mark[i] = len(clean_divs)
             clean_divs.append(divs[i])
 
-    if verbose:
-        print "Started with the following divisors:"
-        print "%s%s" % (_indent, divs)
-        print "Ended with:"
-        print "%s%s" % (_indent, clean_divs)
+    # if verbose:
+    #     print "Started with the following divisors:"
+    #     print "%s%s" % (_indent, divs)
+    #     print "Ended with:"
+    #     print "%s%s" % (_indent, clean_divs)
 
     # Maps a vertex {a, b, ...} to {mark[a], mark[b], ...}
     marked_verts = map(lambda v: _set(map(lambda i: mark[i], v)), verts)
@@ -217,11 +217,11 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
     cleaned_vert_comp = filter(lambda x: not -1 in x[0], vert_comp)
     clean_verts, clean_comps = tuple(zip(*cleaned_vert_comp))
 
-    if verbose:
-        print "Started with the following vertices:"
-        print "%s%s" % (_indent, verts)
-        print "Ended with:"
-        print "%s%s" % (_indent, clean_verts)
+    # if verbose:
+    #     print "Started with the following vertices:"
+    #     print "%s%s" % (_indent, verts)
+    #     print "Ended with:"
+    #     print "%s%s" % (_indent, clean_verts)
 
 
     # Given an edge that should not be removed, we relabel it.
@@ -242,11 +242,11 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
     marked_edges = map(edge_marker, edges)
     clean_edges = filter(lambda x: len(x) != 1, marked_edges)
 
-    if verbose:
-        print "Started with the following edges:"
-        print "%s%s" % (_indent, edges)
-        print "Ended with:"
-        print "%s%s" % (_indent, clean_edges)
+    # if verbose:
+    #     print "Started with the following edges:"
+    #     print "%s%s" % (_indent, edges)
+    #     print "Ended with:"
+    #     print "%s%s" % (_indent, clean_edges)
 
     return IntLattice(clean_comps, clean_divs, clean_edges, clean_verts)
 
@@ -260,7 +260,6 @@ def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True):
     newComps = _parse_components(comps)
     newDivs = _parse_divisors(divs)
     newVerts = _parse_vertices(verts)
-    contains_emptyset = lambda L: {} in L
     newEdges = _parse_edges(edges, verts, empty=has_empty(newVerts))
 
     if sanity:
