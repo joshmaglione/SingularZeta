@@ -78,7 +78,7 @@ def IsLocalSubringZF_Zn(Z, n, unital=True, Taylor=True, verbose=_verbose):
 
     # Test against local zeta functions we already know. 
     if n <= 4:
-        if verbose:
+        if verbose >= 1:
             print "Testing candidate local zeta function against the local unital zeta function for Z^%s" % (n)
         zeta = local_zeta[n - 2]
         diff = (zeta(p, t) - Z).simplify()

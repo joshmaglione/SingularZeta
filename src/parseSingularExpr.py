@@ -85,7 +85,7 @@ def _expr_to_tup(exp):
     if n == 0:
         t = 0
     else:
-        t = [0 for i in range(n)]
+        t = [0 for _ in range(n)]
 
     for fact in fact_terms:
         vars_and_consts = [_str_to_vars(f) for f in fact] # important: keep list

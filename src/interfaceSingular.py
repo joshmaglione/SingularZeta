@@ -57,7 +57,7 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
     str_set_ring = 'setring %s;' % (r_var)
 
     # Print statements for the user.
-    if verbose:
+    if verbose >= 2:
         print "Loading Singular library: \n%s%s" % (_indent, pdir + _CHART_LIB)
         print "Loading Singular library: \n%s%s" % (_indent, pdir + 'LIB/primdec.lib')
         print "Loading Singular library: \n%s%s" % (_indent, pdir + _INT_LAT_LIB)
@@ -95,7 +95,7 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
     sing_amb_fact = _SING.eval("print(BO[1]);").replace(",", "").split("\n")
     if sing_amb_fact[0] != "0":
         # Print info about the ambient space 
-        if verbose:
+        if verbose >= 2:
             print "Ambient space not necessarily affine."
         amb_fact = _parse_list_wrapped(sing_amb_fact)
     else:
@@ -158,7 +158,7 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
     # Get the intersection lattice
     if get_lat and (amb_fact == 0):
         # Print statements for the user about the intersection lattice
-        if verbose:
+        if verbose >= 2:
             print "Creating the intersection lattice."
             print "Running the following Singular code:"
             print "> " + str_load_lat
@@ -179,12 +179,13 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
         # Put all the data together
         lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=focus)
         random_varbs = [r_var, r_var2]
-        print lattice
+        if verbose >= 2:
+            print lattice
     else: 
         lattice = None
         random_varbs = [r_var]
         # TODO: update once we can compute the intersection lattice
-        if verbose and amb_fact != 0:
+        if verbose >= 2 and amb_fact != 0:
             print "Cannot compute intersection lattice yet due to non-trivial ambient space."
 
     # TODO: When the bug for chart 66 is fixed, remove this.

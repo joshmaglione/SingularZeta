@@ -200,12 +200,6 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
             mark[i] = len(clean_divs)
             clean_divs.append(divs[i])
 
-    # if verbose:
-    #     print "Started with the following divisors:"
-    #     print "%s%s" % (_indent, divs)
-    #     print "Ended with:"
-    #     print "%s%s" % (_indent, clean_divs)
-
     # Maps a vertex {a, b, ...} to {mark[a], mark[b], ...}
     marked_verts = map(lambda v: _set(map(lambda i: mark[i], v)), verts)
 
@@ -216,13 +210,6 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
     # Clean vertices and comps by removing all subsets with -1
     cleaned_vert_comp = filter(lambda x: not -1 in x[0], vert_comp)
     clean_verts, clean_comps = tuple(zip(*cleaned_vert_comp))
-
-    # if verbose:
-    #     print "Started with the following vertices:"
-    #     print "%s%s" % (_indent, verts)
-    #     print "Ended with:"
-    #     print "%s%s" % (_indent, clean_verts)
-
 
     # Given an edge that should not be removed, we relabel it.
     def relabel_edge(e):
@@ -242,15 +229,7 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
     marked_edges = map(edge_marker, edges)
     clean_edges = filter(lambda x: len(x) != 1, marked_edges)
 
-    # if verbose:
-    #     print "Started with the following edges:"
-    #     print "%s%s" % (_indent, edges)
-    #     print "Ended with:"
-    #     print "%s%s" % (_indent, clean_edges)
-
     return IntLattice(clean_comps, clean_divs, clean_edges, clean_verts)
-
-
 
 
 # A wrapper for IntLattice for charts. It will digest certain data differently.
@@ -270,7 +249,8 @@ def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True):
                 if len(u) + 1 == len(v):
                     # Check that the two statements are logically equivalent.
                     assert bool(_set([i, j]) in newEdges) == bool(u.issubset(v))
-        print "Passed sanity check 1."
+        if _verbose >= 2:
+            print "Passed sanity check 1."
 
     I = _remove_redundancies(newComps, newDivs, newEdges, newVerts, focus=focus)
 
@@ -286,6 +266,7 @@ def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True):
                 if len(u) + 1 == len(v):
                     # Check that the two statements are logically equivalent.
                     assert bool(_set([i, j]) in I.edges) == bool(u.issubset(v))
-        print "Passed sanity check 2."
+        if _verbose >= 2:
+            print "Passed sanity check 2."
 
     return I

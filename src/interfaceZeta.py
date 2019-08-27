@@ -86,11 +86,11 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
     c_varbs, c_cone, trivial = _clean_cone_data(C.variables, C.cone)
 
     if trivial:
-        if verbose:
+        if verbose >= 1:
             print "Trivial set to integrate over."
         return 0
 
-    if verbose:
+    if verbose >= 1:
         print "Started with the following data."
         print "%sVariables: %s" % (_indent, list(C.variables))
         print "%sCone data: %s\n" % (_indent, C.cone)
@@ -104,7 +104,7 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
     n = len(c_varbs)
     R = _polyring(_QQ, 'Z', n)
 
-    if verbose:
+    if verbose >= 2:
         print "Running Zeta via the polyhedron:"
         print "%s" % (_matrix(cone_mat))
 
@@ -127,7 +127,7 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
     else:
         var_change = {_var('Z') : p_val(c_varbs[0])}
     
-    if verbose:
+    if verbose >= 1:
         print "Applying the following change of variables:"
         if n > 1: 
             for i in range(n):
@@ -137,7 +137,7 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
 
     zed = I.pFactor() * (1 - p**(-1))**n * S.evaluate()
 
-    if verbose:
+    if verbose >= 1:
         print "Multiplying by:"
         print "%s%s" % (_indent, I.pFactor() * (1 - p**(-1))**n)
 

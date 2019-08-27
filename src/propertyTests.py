@@ -34,11 +34,11 @@ def _trivial_cone(C, I, verbose=_verbose):
     c_varbs, c_cone, trivial = _clean_cone_data(C.variables, [(1, 1)])
 
     if trivial:
-        if verbose:
+        if verbose >= 1:
             print "Trivial set to integrate over."
         return 0
 
-    if verbose:
+    if verbose >= 1:
         print "Started with the following data."
         print "%sVariables: %s" % (_indent, list(C.variables))
         print "%sCone data: %s\n" % (_indent, [(1, 1)])
@@ -52,7 +52,7 @@ def _trivial_cone(C, I, verbose=_verbose):
     n = len(c_varbs)
     R = _polyring(_QQ, 'Z', n)
 
-    if verbose:
+    if verbose >= 2:
         print "Running Zeta via the polyhedron:"
         print "%s" % (_matrix(cone_mat))
 
@@ -75,7 +75,7 @@ def _trivial_cone(C, I, verbose=_verbose):
     else:
         var_change = {_var('Z') : p_val(c_varbs[0])}
     
-    if verbose:
+    if verbose >= 1:
         print "Applying the following change of variables:"
         if n > 1: 
             for i in range(n):
@@ -85,7 +85,7 @@ def _trivial_cone(C, I, verbose=_verbose):
 
     zed = I.pFactor() * (1 - p**(-1))**n * S.evaluate()
 
-    if verbose:
+    if verbose >= 1:
         print "Multiplying by:"
         print "%s%s" % (_indent, I.pFactor() * (1 - p**(-1))**n)
 
@@ -97,7 +97,7 @@ def _trivial_cone(C, I, verbose=_verbose):
 
 
 def _zeta_solve(C, verbose=_verbose, integ=True, cone=True):
-    if verbose: 
+    if verbose >= 1: 
         print "="*79
         print "Solving the integral for Chart %s." % (C._id)
 
@@ -105,12 +105,12 @@ def _zeta_solve(C, verbose=_verbose, integ=True, cone=True):
     if C.IsMonomial():
         subcharts = [C]
     else:
-        if _verbose:
+        if _verbose >= 2:
             print "Constructing monomial subcharts."
         # First we get the monomial subcharts
         subcharts = C.Subcharts(verbose=verbose)
 
-    if _verbose:
+    if _verbose >= 1:
         print "Constructing integral."
 
     if integ:
@@ -123,13 +123,13 @@ def _zeta_solve(C, verbose=_verbose, integ=True, cone=True):
     build_int = lambda X: _get_integrand(C.atlas.root.variables, X.birationalMap, temp_integrand, X.jacDet, X._integralFactor)
     integrands = map(build_int, subcharts)
 
-    if _verbose:
+    if _verbose >= 1:
         print("Solving %s integrals." % (len(integrands)))
 
     chrt_int = zip(subcharts, integrands)
     gen_funcs = []
     for t in chrt_int:
-        if verbose:
+        if verbose >= 1:
             print "-"*79
             print "Solving the integral for Subchart %s." % (t[0]._id)
             _integral_printout(t[0])
@@ -192,7 +192,7 @@ def pRationalPointChartTest(C, primes_excluded=[2], bound=20, verbose=_verbose):
     I = C.intLat
     p = _ZZ.coerce(2)
 
-    if verbose:
+    if verbose >= 1:
         print "Checking the number of F_p-points on the listed varieties are correct."
         if C.atlas != None:
             print "%sChart: %s," % (_indent, C._id)
@@ -205,14 +205,14 @@ def pRationalPointChartTest(C, primes_excluded=[2], bound=20, verbose=_verbose):
         if not p in primes_excluded:
             for tup in I.pRationalPoints():
                 if not _count_p(tup, p):
-                    if verbose:
+                    if verbose >= 1:
                         print "The following entry is incorrect for p = %s:\n%s" % (p, tup)
                     raise AssertionError("Failed the test. If there is a bad prime, consider excluding it.")
             for k in range(len(I.vertices)):
                 target = I._vertexToPoints[k]
                 vertex = I.vertices[k]
                 if not _vertex_p(target, vertex, I.divisors, p):
-                    if verbose:
+                    if verbose >= 1:
                         print "The following vertex has incorrect point count for p = %s:\n%s%s" % (p, _indent, vertex)
                     raise AssertionError("Failed the test. If there is a bad prime, consider excluding it.")
         p = _Primes().next(p)

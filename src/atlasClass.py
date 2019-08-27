@@ -43,9 +43,10 @@ class Atlas():
     # Currently, we have LT until more information is given concerning the 
     # variables. 
     def __init__(self, direc, LT=True, verbose=_verbose):
-        if verbose:
-            print("Loading atlas from %s" % (direc))
-            print("="*79)
+        if verbose >= 1:
+            print "Loading atlas from %s" % (direc)
+            if verbose >= 2:
+                print "="*79
 
         # First we "clean up" the direc string.
         if direc[-1] != "/":
@@ -76,16 +77,17 @@ class Atlas():
         # TODO: Once the jacDet bug is fixed, uncomment the lines above.
         self.root = _load(1, direc, get_lat=False) # Cannot run Singular anymore
 
-        if verbose:
-            print("Successfully loaded atlas.")
-            print("="*79)
+        if verbose >= 1:
+            print "Successfully loaded atlas."
+            if verbose >= 2:
+                print "="*79
 
         self.integrand = _build_integrand(self.root.variables, LT)
         for C in self.charts:
             C.atlas = self
 
-        if verbose:
-            print(self)
+        if verbose >= 1:
+            print self
             _integral_printout(self.root, integrand=self.integrand)
 
 

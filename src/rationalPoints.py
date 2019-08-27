@@ -7,7 +7,7 @@
 from globalVars import _DEFAULT_INDENT as _indent
 from globalVars import _DEFAULT_p as _p
 from globalVars import _DEFAULT_USER_INPUT as _user_input
-# from globalVars import _DEFAULT_VERBOSE as _verbose
+from globalVars import _DEFAULT_VERBOSE as _verbose
 from globalVars import _Lookup_Table as _lookup
 from sage.all import var as _var
 from sage.all import AffineSpace as _affine_space
@@ -55,7 +55,7 @@ def _get_deg_vec(Q, S, x):
 # Given the data from the variety, we convert it to a list of values that we 
 # can effectively compare.
 def _build_data(Q, S, varbs, verbose=_verbose):
-    if verbose:
+    if verbose >= 2:
         print "Converting data:"
         print _indent + "Ambient factor ideal: %s" % (Q)
         print _indent + "Polynomial system: %s" % (S)
@@ -90,7 +90,7 @@ def _decide_equiv(data, table, verbose=_verbose):
     if len(rel_dat) == 0:
         return False, 0
 
-    if verbose:
+    if verbose >= 2:
         print _indent + "Found %s similar systems" % (len(rel_dat))
 
     # TODO: Improve this!
@@ -115,7 +115,7 @@ def _check_saved_table(A, S, verbose=_verbose):
 
     # check to see if we have even used this key before
     if not key_AS in known_keys:
-        if verbose:
+        if verbose >= 2:
             print "No similar system is saved in database."
         _lookup[key_AS] = []
         return False, key_AS
@@ -125,18 +125,18 @@ def _check_saved_table(A, S, verbose=_verbose):
     data = _build_data(Q, S, list(C.gens()))
 
     # decide if our system has been saved in our table
-    if verbose:
+    if verbose >= 2:
         print "Checking database to find a similar system."
     
     check, count = _decide_equiv(data, table)
 
     if check: 
         output = tuple([True, count])
-        if verbose:
+        if verbose >= 2:
             print "We found a match!"
     else:
         output = tuple([False, key_AS])
-        if verbose:
+        if verbose >= 2:
             print "We didn't find anything."
     
     return output
@@ -159,7 +159,7 @@ def _save_to_lookup(A, S, key, count, verbose=_verbose):
     table.append(data)
     _lookup[key] = table
 
-    if verbose:
+    if verbose >= 2:
         print "Saved input to database."
         print _lookup
 

@@ -81,15 +81,15 @@ def _simplify_expr(expr, units, non_units, repl):
             if is_unit:
                 # If the factor is a unit, replace it with 1
                 new_factors.append(map(sage_int, [1, 1]))
-                if _verbose:
-                        print("%sAssumed %s to be a unit because the following are units:\n%s%s" % (_indent, d, _indent*2, units))
+                if _verbose >= 2:
+                        print "%sAssumed %s to be a unit because the following are units:\n%s%s" % (_indent, d, _indent*2, units)
             else:
                 is_non_unit, j = is_contained(d, non_units)
                 if is_non_unit:
                     # If the factor is not a unit, replace it with p*z
                     new_factors.append([p*repl[j], f[i][1]])
-                    if _verbose:
-                        print("%sReplaced %s with %s because the following are non-units:\n%s%s" % (_indent, d, p*repl[j], _indent*2, non_units))
+                    if _verbose >= 2:
+                        print "%sReplaced %s with %s because the following are non-units:\n%s%s" % (_indent, d, p*repl[j], _indent*2, non_units)
                 else:
                     # In this case, the factor is neither in the set of units 
                     # nor is it in the set of non_units. **By the assumption 
@@ -97,8 +97,8 @@ def _simplify_expr(expr, units, non_units, repl):
                     # we know this factor is just a unit. Therefore, we just 
                     # replace it with 1. 
                     new_factors.append(map(sage_int, [1, 1]))
-                    if _verbose:
-                        print("%sAssumed %s to be a unit because the following are non-units:\n%s%s" % (_indent, d, _indent*2, non_units))
+                    if _verbose >= 2:
+                        print "%sAssumed %s to be a unit because the following are non-units:\n%s%s" % (_indent, d, _indent*2, non_units)
         else: 
             new_factors.append([d, f[i][1]])
 
@@ -149,8 +149,8 @@ def _simplify(C, units, non_units, repl, verbose=_verbose):
 # Given a chart C and a vertex v, construct the (monomial) subchart of C with 
 # respect to v. This comes from the intersection lattice of C. 
 def _construct_subchart(C, v, verbose=_verbose): 
-    if verbose:
-        print("%sConstructing the subchart from vertex: %s" % (_indent, v))
+    if verbose >= 1:
+        print "%sConstructing the subchart from vertex: %s" % (_indent, v)
 
     # Get the data
     A = C.AmbientSpace()
@@ -165,9 +165,9 @@ def _construct_subchart(C, v, verbose=_verbose):
     a = len(non_units)
     b = len(units)
     
-    if verbose:
-        print("%sUnits: %s" % (_indent*2, units))
-        print("%sNon-units: %s" % (_indent*2, non_units))
+    if verbose >= 1:
+        print "%sUnits: %s" % (_indent*2, units)
+        print "%sNon-units: %s" % (_indent*2, non_units)
 
     # Will replace non_unit[k] with new_varb[k].
     new_varbs = _safe_variables(C.variables, a + b)
@@ -175,16 +175,16 @@ def _construct_subchart(C, v, verbose=_verbose):
     # Replace non_unit[k] with p*repl[k]
     repl = [new_varbs[i] for i in range(a + b)]
 
-    if verbose:
-        print("%sApplying the following change of variables:" % (_indent*2))
+    if verbose >= 2:
+        print "%sApplying the following change of variables:" % (_indent*2)
         add_up = lambda x, y: x + y
         if b > 0:
             dummy_vars = ["a" + str(i) for i in range(b)]
             chg_var_u = lambda x: "%s%s -> %s + %s*%s\n" % (_indent*3, x[0], x[2], _p, x[1])
-            print(reduce(add_up, map(chg_var_u, zip(units, repl[a:], dummy_vars)), "")[:-1])
+            print reduce(add_up, map(chg_var_u, zip(units, repl[a:], dummy_vars)), "")[:-1]
         if a > 0:
             chg_var_nu = lambda x: "%s%s -> %s*%s\n" % (_indent*3, x[0], _p, x[1])
-            print(reduce(add_up, map(chg_var_nu, zip(non_units, repl[:a])), "")[:-1])
+            print reduce(add_up, map(chg_var_nu, zip(non_units, repl[:a])), "")[:-1]
         
 
     # Build the subchart
@@ -199,8 +199,8 @@ def _construct_subchart(C, v, verbose=_verbose):
     p = _var(_p)
     sub_C.jacDet *= p**c
 
-    if verbose:
-        print("%sMultiplying Jacobian by %s" % (_indent*2, p**c))
+    if verbose >= 2:
+        print "%sMultiplying Jacobian by %s" % (_indent*2, p**c)
 
     return sub_C
 
@@ -310,7 +310,7 @@ class Chart():
 
         # Print statements for the user
         list_polys = lambda x, y: str(x) + ",\n" + _indent + str(y)
-        if _verbose:
+        if _verbose >= 1:
             print "The intersection lattice contains:"
             print "%s%s vertices," % (_indent, len(verts))
             print "%s%s edges," % (_indent, len(self.intLat.edges))
@@ -322,20 +322,19 @@ class Chart():
         # Visit every vertex and construct a corresponding (monomial) subchart.
         charts = [_construct_subchart(self, v, verbose=verbose) for v in verts]
 
-        if _verbose:
+        if _verbose >= 1:
             print "Computing the p-rational points for each vertex in the intersection lattice. "
 
         # Next we determine the p-rational points on the charts
         _ = self.intLat.pRationalPoints(user_input=_user_input)
         p_rat_pts = self.intLat._vertexToPoints
-        print self.intLat._vertexToPoints
 
         # We run through the charts and multiply the integralFactor by the 
         # corresponding p-rational count 
         for i in range(len(verts)):
             charts[i]._integralFactor *= p_rat_pts[i]
 
-        if verbose:
+        if verbose >= 2:
             print "We are verifying that all subcharts are monomial..."
         for i in range(len(charts)):
             C = charts[i]
@@ -344,7 +343,7 @@ class Chart():
 
         self._subcharts = tuple(charts)
 
-        if _verbose:
+        if _verbose >= 2:
             print _indent + "Passed."
 
         return tuple(charts)
@@ -352,7 +351,7 @@ class Chart():
 
     # Compute the integral for the zeta function on this chart
     def ZetaIntegral(self, user_input=_user_input, verbose=_verbose):
-        if verbose: 
+        if verbose >= 1: 
             print "="*79
             print "Solving the integral for Chart %s." % (self._id)
 
@@ -360,25 +359,25 @@ class Chart():
         if self.IsMonomial():
             subcharts = [self]
         else:
-            if _verbose:
+            if _verbose >= 2:
                 print "Constructing monomial subcharts."
             # First we get the monomial subcharts
             subcharts = self.Subcharts(verbose=verbose)
 
-        if _verbose:
+        if _verbose >= 2:
             print "Constructing integral."
 
         # Now we determine the integrands for each subchart
         build_int = lambda C: _map_integrand(self.atlas, C)
         integrands = map(build_int, subcharts)
 
-        if _verbose:
-            print("Solving %s integrals." % (len(integrands)))
+        if _verbose >= 1:
+            print "Solving %s integrals." % (len(integrands))
 
         chrt_int = zip(subcharts, integrands)
         gen_funcs = []
         for t in chrt_int:
-            if verbose:
+            if verbose >= 1:
                 print "-"*79
                 print "Solving the integral for Subchart %s." % (t[0]._id)
                 _integral_printout(t[0])

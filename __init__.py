@@ -5,14 +5,9 @@
 #
 
 
-__version__ = 0.9
+__version__ = 1.0
 
 print "Loading..."
-
-# === This is very annoying during development =================================
-import sys as _sys
-_sys.dont_write_bytecode = True
-# ==============================================================================
 
 # Load the global variables that the user can change.  
 from src.globalVars import _DEFAULT_INDENT as _indent
@@ -37,8 +32,8 @@ if not isinstance(_t, str):
 if not isinstance(_user_input, bool):
     raise TypeError("Global variable '_DEFAULT_USER_INPUT' must be set to boolean: True or False.")
 
-if not isinstance(_verbose, bool):
-    raise TypeError("Global variable '_DEFAULT_VERBOSE' must be set to boolean: True or False.")
+if not isinstance(_verbose, int):
+    raise TypeError("Global variable '_DEFAULT_VERBOSE' must be set to an integer: True or False.")
     
 
 # Enables us to turn off printing.
@@ -107,7 +102,7 @@ print _indent + "User defined default settings:"
 print _indent*2 + "Load database: %s" % (_load)
 print _indent*2 + "User input: %s" % (_user_input)
 print _indent*2 + "Variable names: %s" % ([_p, _t])
-print _indent*2 + "Verbose printing: %s" % (_verbose)
+print _indent*2 + "Verbose level: %s" % (_verbose)
 
 
 # Sage is still on python2.

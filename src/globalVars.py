@@ -15,7 +15,7 @@ _DEFAULT_LOAD_DB = True         # Boolean
 _DEFAULT_p = 'p'                # String
 _DEFAULT_t = 't'                # String
 _DEFAULT_USER_INPUT = True      # Boolean
-_DEFAULT_VERBOSE = True         # Boolean
+_DEFAULT_VERBOSE = 0            # Integer
 
 
 # Variables for Singular things
