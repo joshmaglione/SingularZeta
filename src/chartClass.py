@@ -18,7 +18,9 @@ from sage.all import expand as _expand
 from sage.all import factor as _factor
 from sage.all import Ideal as _ideal
 from sage.all import PolynomialRing as _polyring
+from sage.all import QQ as _QQ
 from sage.all import Set as _set
+from sage.all import symbolic_expression as _symb_expr
 from sage.all import var as _var
 from sage.all import ZZ as _ZZ
 
@@ -30,7 +32,7 @@ def _safe_variables(varbs, n):
     letter = 'z'
     varbs_str = {str(x) for x in varbs}
     new_varbs = []
-    for k in range(n):
+    for _ in range(n):
         if not letter + str(i) in varbs_str:
             new_varbs.append(_var(letter + str(i)))
         i += 1
@@ -45,6 +47,20 @@ def _get_variable_support(S):
     return {str(x) for x in f.variables()}
 
 
+# Test if a rational multiple of f is contained in S. 
+def is_contained(f, S): 
+    # First convert to string, then convert to symbolic expression. String 
+    # might be overkill.
+    to_symb_expr = lambda x: _symb_expr(str(x))
+    g = to_symb_expr(f)
+    T = map(to_symb_expr, S)
+    quotients = map(lambda x: x/g in _QQ, T)
+    if any(quotients): 
+        return True, quotients.index(True)
+    else:
+        return False, -1
+
+
 # Given an expression expr, units, non_units, and replacements repl, simplify 
 # the expression to be monomial in the latest variables.
 def _simplify_expr(expr, units, non_units, repl):
@@ -52,8 +68,7 @@ def _simplify_expr(expr, units, non_units, repl):
     p = _var(_p)
     f = expr.factor_list()
     new_factors = []
-    # Easier to compare polynomials as strings. This might bite me later.
-    conv_to_str = lambda x: str(x)
+    # Need Sage int for some reason...
     sage_int = lambda x: _ZZ.coerce(x)
 
     # Run through all the factors of expr
@@ -62,14 +77,19 @@ def _simplify_expr(expr, units, non_units, repl):
         # First we check that all the variables are contained in the support of 
         # the system. 
         if any(str(x) in sys_varbs for x in d.variables()):
-            if str(d) in map(conv_to_str, units):
+            is_unit, j = is_contained(d, units)
+            if is_unit:
                 # If the factor is a unit, replace it with 1
                 new_factors.append(map(sage_int, [1, 1]))
+                if _verbose:
+                        print("%sAssumed %s to be a unit because the following are units:\n%s%s" % (_indent, d, _indent*2, units))
             else:
-                if str(d) in map(conv_to_str, non_units):
+                is_non_unit, j = is_contained(d, non_units)
+                if is_non_unit:
                     # If the factor is not a unit, replace it with p*z
-                    j = non_units.index(d)
                     new_factors.append([p*repl[j], f[i][1]])
+                    if _verbose:
+                        print("%sReplaced %s with %s because the following are non-units:\n%s%s" % (_indent, d, p*repl[j], _indent*2, non_units))
                 else:
                     # In this case, the factor is neither in the set of units 
                     # nor is it in the set of non_units. **By the assumption 
@@ -77,6 +97,8 @@ def _simplify_expr(expr, units, non_units, repl):
                     # we know this factor is just a unit. Therefore, we just 
                     # replace it with 1. 
                     new_factors.append(map(sage_int, [1, 1]))
+                    if _verbose:
+                        print("%sAssumed %s to be a unit because the following are non-units:\n%s%s" % (_indent, d, _indent*2, non_units))
         else: 
             new_factors.append([d, f[i][1]])
 
@@ -173,12 +195,12 @@ def _construct_subchart(C, v, verbose=_verbose):
     vert_to_str = lambda x, y: str(x) + str(y)
     sub_C._id = int(str(C._id) + reduce(vert_to_str, v, ''))
     # We multiply by a factor of p
-    b = len(_get_variable_support(divs))
+    c = len(_get_variable_support(divs))
     p = _var(_p)
-    sub_C.jacDet *= p**b
+    sub_C.jacDet *= p**c
 
     if verbose:
-        print("%sMultiplying Jacobian by %s" % (_indent*2, p**b))
+        print("%sMultiplying Jacobian by %s" % (_indent*2, p**c))
 
     return sub_C
 
