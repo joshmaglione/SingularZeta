@@ -110,7 +110,7 @@ def _zeta_solve(C, verbose=_verbose, integ=True, cone=True):
         # First we get the monomial subcharts
         subcharts = C.Subcharts(verbose=verbose)
 
-    if _verbose >= 1:
+    if verbose >= 1:
         print "Constructing integral."
 
     if integ:
@@ -123,7 +123,7 @@ def _zeta_solve(C, verbose=_verbose, integ=True, cone=True):
     build_int = lambda X: _get_integrand(C.atlas.root.variables, X.birationalMap, temp_integrand, X.jacDet, X._integralFactor)
     integrands = map(build_int, subcharts)
 
-    if _verbose >= 1:
+    if verbose >= 1:
         print("Solving %s integrals." % (len(integrands)))
 
     chrt_int = zip(subcharts, integrands)

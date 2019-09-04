@@ -28,8 +28,8 @@ def IsLocalSubringZF_Zn(Z, n, unital=True, Taylor=True, verbose=_verbose):
         raise TypeError("Expected parameter 'unital' to be boolean.")
     if not isinstance(Taylor, bool):
         raise TypeError("Expected parameter 'Taylor' to be boolean.")
-    if not isinstance(verbose, bool):
-        raise TypeError("Expected parameter 'verbose' to be boolean.")
+    if not isinstance(verbose, int):
+        raise TypeError("Expected parameter 'verbose' to be an integer.")
 
     # Do a quick change to make everything about *unital* subrings.
     if unital == False:
