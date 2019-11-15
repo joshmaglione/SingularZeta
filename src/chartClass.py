@@ -17,6 +17,7 @@ from parseSingularExpr import _expr_to_terms
 from sage.all import expand as _expand
 from sage.all import factor as _factor
 from sage.all import Ideal as _ideal
+from sage.all import load as _load
 from sage.all import PolynomialRing as _polyring
 from sage.all import QQ as _QQ
 from sage.all import Set as _set
@@ -354,6 +355,16 @@ class Chart():
         if verbose >= 1: 
             print "="*79
             print "Solving the integral for Chart %s." % (self._id)
+
+        # TODO: Delete this once we have everything automated!
+        if self.atlas != None and "n4_" in self.atlas.directory:
+            if self._id == 61:
+                import temp.chart61_new as c61
+                return c61.int_61
+            if self._id == 66: 
+                import temp.chart66 as c66
+                return c66.int_66
+
 
         # First decide if the chart is monomial
         if self.IsMonomial():

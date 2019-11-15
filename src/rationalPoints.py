@@ -24,7 +24,7 @@ _verbose = False
 
 # The following is a function written by Tobias Rossmann for counting the 
 # F_q-rational points on varieties given by a sequence F. 
-def _cntpts(F, q=None, torus=False):
+def _count_pts(F, q=None, torus=False):
     # Given a bunch of ordinary polynomials F, try to symbolically
     # count the number of GF(q) points of V(F).
     assert F
@@ -51,14 +51,14 @@ def _cntpts(F, q=None, torus=False):
         from Zeta.torus import SubvarietyOfTorus
 
         if torus:
-            return SubvarietyOfTorus([F]).count()
+            return SubvarietyOfTorus([F]).count().subs({_var('q') : q})
         
         total = _SR(0)
         for S in _subsets(R.gens()):
             D = {str(x): R(0) if x in S else x for x in R.gens()}
             G = [f(**D) for f in F]
             V = SubvarietyOfTorus(G)
-            cnt = V.count()/(q-1)**len(S)
+            cnt = V.count().subs({_var('q') : q})/(q-1)**len(S)
             total += cnt
         return total.factor() if total else total
 
@@ -330,7 +330,7 @@ def _rational_points(A, S, user_input=_user_input, label=''):
                         # We turn off symbolic counting
                         z_symb_curr = Z.common.symbolic
                         Z.common.symbolic = False
-                        N = _cntpts(S)
+                        N = _count_pts(S)
                         Z.common.symbolic = z_symb_curr
                     except _CountException: 
                         # Now we ask the user or skip

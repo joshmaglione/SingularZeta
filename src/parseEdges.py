@@ -31,7 +31,7 @@ def _get_total_charts(edges):
 
 # Assume we get the output from _parse_edges and the number of vertices.
 def _get_leaves(edges, n):
-    is_leaf = [1 for i in range(n)]
+    is_leaf = [1 for _ in range(n)]
     for e in edges:
         is_leaf[e[0] - 1] = 0
     return tuple([k + 1 for k in range(n) if is_leaf[k]])
