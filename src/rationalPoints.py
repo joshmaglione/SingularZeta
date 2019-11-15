@@ -11,11 +11,57 @@ from globalVars import _DEFAULT_VERBOSE as _verbose
 from globalVars import _Lookup_Table as _lookup
 from sage.all import var as _var
 from sage.all import AffineSpace as _affine_space
+from sage.all import PolynomialRing as _poly_ring
+from sage.all import Subsets as _subsets
+from sage.all import GF as _GF
+from sage.all import SR as _SR
 from sage.all import QQ as _QQ
 from sage.all import Word as _word
 from parseSingularExpr import _parse_user_input
+from Zeta.torus import CountException as _CountException
 
 _verbose = False
+
+# The following is a function written by Tobias Rossmann for counting the 
+# F_q-rational points on varieties given by a sequence F. 
+def _cntpts(F, q=None, torus=False):
+    # Given a bunch of ordinary polynomials F, try to symbolically
+    # count the number of GF(q) points of V(F).
+    assert F
+
+    from itertools import product
+    
+    if q:
+        R = F[0].parent()
+        n = R.ngens()
+        K = _poly_ring(_GF(q),n, R.gens())
+        G = [K(f) for f in F]
+        res = 0
+        for x in product(_GF(q),repeat=n):
+            if torus and not prod(x):
+                continue
+            if all(g(x) == 0 for g in G):
+                res += 1
+        return res
+    else:
+        q = _var(_p)
+        R = F[0].parent()
+        n = R.ngens()
+
+        from Zeta.torus import SubvarietyOfTorus
+
+        if torus:
+            return SubvarietyOfTorus([F]).count()
+        
+        total = _SR(0)
+        for S in _subsets(R.gens()):
+            D = {str(x): R(0) if x in S else x for x in R.gens()}
+            G = [f(**D) for f in F]
+            V = SubvarietyOfTorus(G)
+            cnt = V.count()/(q-1)**len(S)
+            total += cnt
+        return total.factor() if total else total
+
 
 # Given the ambient space and a system of polynomials, we return a lookup key 
 # and the variables in (the ambient space, the defining ideal, and the system).
@@ -24,7 +70,7 @@ _verbose = False
 # KEY = (a, b, c, d)
 #   a: the dimension of the ambient space, A
 #   b: the number of variables in the defining ideal (the factor ideal) of A
-#   c: the numer of polynomials in the system, S
+#   c: the number of polynomials in the system, S
 #   d: the number of variables in the system, S
 def _build_key(d, Q, S):
     mult = lambda x, y: x*y
@@ -98,7 +144,7 @@ def _decide_equiv(data, table, verbose=_verbose):
 
 
 # Given an ambient space and a polynomial system, return a pair: a boolean 
-# stating whether we have seens this data before and either the key or the 
+# stating whether we have seen this data before and either the key or the 
 # count. The second entry depends on the first (not good typing sorry!). 
 def _check_saved_table(A, S, verbose=_verbose):
     # We need to know if there is a defining polynomial
@@ -230,6 +276,7 @@ def _ask_user(variety, label):
 # the number of p-rational points on the corresponding variety or return data 
 # for a human to compute. 
 def _rational_points(A, S, user_input=_user_input, label=''):
+    import Zeta as Z
     Aff = _affine_space(len(A.gens()), _QQ, A.gens())
     d = Aff.dimension()
     variety = Aff.subscheme(S)
@@ -278,10 +325,19 @@ def _rational_points(A, S, user_input=_user_input, label=''):
                     N = data
                 else:
                     # It is not contained in our table, so we continue
-                    if user_input:
-                        N = _ask_user(variety, label)
-                        _save_to_lookup(Aff, S, data, N)
-                    else:
-                        N = _var('C' + label)
+                    try:
+                        # Now we apply Rossmann's toric counting function
+                        # We turn off symbolic counting
+                        z_symb_curr = Z.common.symbolic
+                        Z.common.symbolic = False
+                        N = _cntpts(S)
+                        Z.common.symbolic = z_symb_curr
+                    except _CountException: 
+                        # Now we ask the user or skip
+                        if user_input:
+                            N = _ask_user(variety, label)
+                            _save_to_lookup(Aff, S, data, N)
+                        else:
+                            N = _var('C' + label)
     
     return tuple([N, variety])
