@@ -17,7 +17,6 @@ from rationalPoints import _rational_points
 # Parses the list of vertices. Changes from {0, 1}-tuple to a set.
 def _parse_vertices(vert_list):
     def build_subset(t):
-        n = len(t)
         count = 0
         subset = []
         for i in t:
@@ -88,7 +87,7 @@ def _inc_exc(n, verts, edges, counts):
         for k in level:
             # First get all the edges containing vertex k
             edge_set = filter(lambda x: k in x, edges)
-            # Now we put all the vertices together yielding all the nieghbors
+            # Now we put all the vertices together yielding all the neighbors
             neighbors = reduce(lambda x, y: x + y, edge_set, _set())
             # Grab the neighbors whose numbers are strictly larger
             next_neigh = filter(lambda x: x > k, neighbors)
