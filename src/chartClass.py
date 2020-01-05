@@ -49,7 +49,7 @@ def _get_variable_support(S):
 
 
 # Test if a rational multiple of f is contained in S. 
-def is_contained(f, S): 
+def _is_contained(f, S): 
     # First convert to string, then convert to symbolic expression. String 
     # might be overkill.
     to_symb_expr = lambda x: _symb_expr(str(x))
@@ -78,14 +78,14 @@ def _simplify_expr(expr, units, non_units, repl):
         # First we check that all the variables are contained in the support of 
         # the system. 
         if any(str(x) in sys_varbs for x in d.variables()):
-            is_unit, j = is_contained(d, units)
+            is_unit, j = _is_contained(d, units)
             if is_unit:
                 # If the factor is a unit, replace it with 1
                 new_factors.append(map(sage_int, [1, 1]))
                 if _verbose >= 2:
                         print "%sAssumed %s to be a unit because the following are units:\n%s%s" % (_indent, d, _indent*2, units)
             else:
-                is_non_unit, j = is_contained(d, non_units)
+                is_non_unit, j = _is_contained(d, non_units)
                 if is_non_unit:
                     # If the factor is not a unit, replace it with p*z
                     new_factors.append([p*repl[j], f[i][1]])

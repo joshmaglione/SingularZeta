@@ -40,9 +40,9 @@ def _build_integrand(varbs, LT):
 
 class Atlas():
 
-    # Currently, we have LT until more information is given concerning the 
-    # variables. 
-    def __init__(self, direc, LT=True, verbose=_verbose):
+    # Currently, we have lower_triangular until more information is given 
+    # concerning the variables. 
+    def __init__(self, direc, lower_triangular=True, verbose=_verbose):
         if verbose >= 1:
             print "Loading atlas from %s" % (direc)
             if verbose >= 2:
@@ -82,7 +82,7 @@ class Atlas():
             if verbose >= 2:
                 print "="*79
 
-        self.integrand = _build_integrand(self.root.variables, LT)
+        self.integrand = _build_integrand(self.root.variables, lower_triangular)
         for C in self.charts:
             C.atlas = self
 
