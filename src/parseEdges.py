@@ -21,6 +21,7 @@ def _parse_edges(direc, version=1):
         if e != "" and "--" in e:
             a, b = e.split("--")
             edges.append([int(a), int(b)])
+            
     # Per Anne's change (18-12-2019), there is another level to consider.
     if version != 1:
         from os import listdir
@@ -41,14 +42,6 @@ def _parse_edges(direc, version=1):
 
 # Assume we get the output from _parse_edges: a list of tuples of ints or lists.
 def _get_vertex_labels(edges):
-    # vertices = _set(['1']).union(_set(str(e[1]) for e in edges))
-    # def convert_back(s):
-    #     if "[" in s:
-    #         a, b = s.replace("[", "").replace("]", "").split(", ")
-    #         return [int(a), int(b)]
-    #     else:
-    #         return int(s)
-    # return map(convert_back, sorted(list(vertices)))
     S = _set([e[1] for e in edges])
     return list(_set([1]).union(S))
 

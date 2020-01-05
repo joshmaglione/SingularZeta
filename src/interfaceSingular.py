@@ -31,8 +31,8 @@ def _get_safe_var():
 
 def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
     # We check that the input is the correct type.
-    if not _is_int(num):
-        raise TypeError("First argument must be an integer.")
+    if not (_is_int(num) or isinstance(num, list)):
+        raise TypeError("First argument must be a list or an integer.")
     if not isinstance(direc, str): 
         raise TypeError("Second argument must be a string.")
 
@@ -45,6 +45,12 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
         pdir = direc[:index+1]
     except ValueError:
         pdir = './'
+
+    # Convert the number into a string.
+    if is_int(num):
+        num = str(num)
+    else:
+        num = str(num[0]) + "." + str(num[1])
 
     # We need to find a safe variable name for our Singular run.
     r_var = _get_safe_var()
