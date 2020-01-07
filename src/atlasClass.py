@@ -61,7 +61,7 @@ class Atlas():
 
         # Get the leaves as a tuple of integers corresponding to the vertex 
         # number
-        self.leaves = _get_leaves(self.edges, self.number_of_charts)
+        self.leaves = _get_leaves(self.edges)
 
         # Load Chart 1 as the starting chart. 
         # BUG with the following command due to jacDet not being defined.

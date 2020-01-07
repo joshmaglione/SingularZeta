@@ -47,7 +47,7 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
         pdir = './'
 
     # Convert the number into a string.
-    if is_int(num):
+    if _is_int(num):
         num = str(num)
     else:
         num = str(num[0]) + "." + str(num[1])
