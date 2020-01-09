@@ -194,7 +194,7 @@ def _construct_subchart(C, v, verbose=_verbose):
     # We modify the subchart just slightly. 
     # We give it an id from C
     vert_to_str = lambda x, y: str(x) + str(y)
-    sub_C._id = int(str(C._id) + reduce(vert_to_str, v, ''))
+    sub_C._id = str(C._id) + reduce(vert_to_str, v, '.')
     # We multiply by a factor of p
     c = len(_get_variable_support(divs))
     p = _var(_p)

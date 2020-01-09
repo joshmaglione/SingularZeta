@@ -276,12 +276,13 @@ def _ask_user(variety, label):
 # the number of p-rational points on the corresponding variety or return data 
 # for a human to compute. 
 def _rational_points(A, S, user_input=_user_input, label=''):
+    print S
     import Zeta as Z
     Aff = _affine_space(len(A.gens()), _QQ, A.gens())
     d = Aff.dimension()
     variety = Aff.subscheme(S)
     p = _var(_p)
-    
+    print S
     # If S is trivial, then return the trivial count.
     if S == [0]: 
         return tuple([p**d, variety])

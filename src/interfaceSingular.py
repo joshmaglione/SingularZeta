@@ -119,10 +119,17 @@ def LoadChart(num, direc,
         str_load_lib2 = 'LIB "' + pdir + _CHART_LIB_V1 + '";'
         str_load_lib3 = 'LIB "' + pdir + _INT_LAT_LIB_V1 + '";'
         load_strs = [str_load_lib1, str_load_lib2, str_load_lib3]
+        str_load_char = 'def %s = load_Chart(%s, "%s");' % (r_var, num, direc)
     else:
         str_load_lib2 = 'LIB "' + pdir + _CHART_LIB + '";'
         load_strs = [str_load_lib1, str_load_lib2]
-    str_load_char = 'def %s = load_Chart(%s, "%s");' % (r_var, num, direc)
+        iv_var = _get_safe_var()
+        if "." in num:
+            str_input = 'intvec %s=%s;' % (iv_var, num.replace(".", ","))
+        else: 
+            str_input = 'int %s=%s;' % (iv_var, num)
+        str_load_char = 'def %s = load_Chart2(%s, "%s");' % (r_var, iv_var, direc)
+    
     str_set_ring = 'setring %s;' % (r_var)
 
     # Print statements for the user.
@@ -133,6 +140,8 @@ def LoadChart(num, direc,
         print "\nRunning the following Singular code:"
         for lib_str in load_strs:
             print "> " + lib_str
+        if version >= 2:
+            print "> " + str_input
         print "> " + str_load_char
         print "> " + str_set_ring + "\n"
 
@@ -157,6 +166,7 @@ def LoadChart(num, direc,
     else:
         _ = _SING.lib(pdir + _CHART_LIB)
         _ = _SING.eval("ring r;") # Work around to a bug.
+        _ = _SING.eval(str_input)
     _ = _SING.eval(str_load_char + "\n" + str_set_ring)
 
     # Get the basics: coeff ring and vars.
@@ -224,15 +234,15 @@ def LoadChart(num, direc,
     focus = _parse_list_wrapped(sing_foc_str)
 
     # Get the intersection lattice
-    if get_lat and (amb_fact == 0):
+    if get_lat and (version >= 2 or amb_fact == 0):
         lattice = _get_inter_lattice(data=(num, direc, focus), ver=version)
     else: 
         lattice = None
-        if verbose >= 2 and amb_fact != 0:
-            print "Cannot compute intersection lattice yet due to non-trivial ambient space."
+        if verbose <= 1 and amb_fact != 0:
+            print "Cannot compute intersection lattice due to non-trivial ambient space."
 
     # TODO: When the bug for chart 66 is fixed, remove this.
-    if 'n4_' in direc and num == 66:
+    if version <= 1 and 'n4_' in direc and num == 66:
         lattice = None
 
     # Clean up the Singular run

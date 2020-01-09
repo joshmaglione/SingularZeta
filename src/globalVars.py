@@ -22,7 +22,7 @@ _DEFAULT_VERBOSE = 2            # Integer
 # Defined globally in case their format/ name changes.
 _CHART_LIB_V1 = "Chart_loading.lib"
 _INT_LAT_LIB_V1 = "intersectionLattice.lib"
-_CHART_LIB = "load_Charts.lib"
+_CHART_LIB = "load_Charts2.lib"
 _chart_num = lambda x: "Chart" + str(x) + ".ssi" 
 
 
