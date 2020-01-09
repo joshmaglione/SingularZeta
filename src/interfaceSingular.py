@@ -1,5 +1,5 @@
 #
-#   Copyright 2019 Joshua Maglione 
+#   Copyright 2019--2020 Joshua Maglione 
 #
 #   Distributed under MIT License
 #
@@ -7,7 +7,7 @@
 from sage.all import singular as _SING
 from sage.all import randint as _RAND
 from sage.all import factor as _factor
-from globalVars import _is_int, _CHART_LIB, _INT_LAT_LIB, _chart_num
+from globalVars import _is_int, _CHART_LIB, _CHART_LIB_V1, _INT_LAT_LIB_V1,_chart_num
 from globalVars import _DEFAULT_INDENT as _indent
 from globalVars import _DEFAULT_VERBOSE as _verbose
 from chartClass import Chart as _chart
@@ -29,7 +29,65 @@ def _get_safe_var():
     return r_var
 
 
-def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
+def _get_inter_lattice(data=None, verbose=_verbose, ver=2):
+    if ver <= 1:
+        num, direc, focus = data
+        # Get the info read for the intersection lattice
+        r_var2 = _get_safe_var()
+        str_load_lat = 'def %s = createInterLattice(%s, "%s");' % (r_var2, num, direc)
+        str_set_lat = 'setring %s;' % (r_var2)
+
+        # Print statements for the user about the intersection lattice
+        if verbose >= 2:
+            print "Creating the intersection lattice."
+            print "Running the following Singular code:"
+            print "> " + str_load_lat
+            print "> " + str_set_lat
+        
+        # Get all the data from the int lattice individually
+        _ = _SING.eval(str_load_lat)
+        _ = _SING.eval(str_set_lat)
+        sing_lat_vert_str = _SING.eval('retlist[1];').split("\n")
+        lat_vert = _parse_list(sing_lat_vert_str, var_expr=False)
+        sing_lat_comp_str = _SING.eval('retlist[2];').split("\n")
+        lat_comp = _parse_list(sing_lat_comp_str, var_expr=False)
+        sing_lat_edge_str = _SING.eval('retlist[3];').split("\n")
+        lat_edge = _parse_list(sing_lat_edge_str, var_expr=False)
+        sing_lat_divs_str = _SING.eval('print(retlist[4]);').replace(",", "").replace("_[1]=", "").split("\n")
+        lat_divs = _parse_list(sing_lat_divs_str)
+
+        # Put all the data together
+        lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=focus, ver=1)
+        
+        if verbose >= 2:
+            print lattice
+        
+        _ = _SING.eval("kill %s;" % (r_var2))
+    else:
+        sing_lat_vert_str = _SING.eval('ILattice[1];').split("\n")
+        lat_vert = _parse_list(sing_lat_vert_str, var_expr=False)
+        sing_lat_comp_str = _SING.eval('ILattice[2];').split("\n")
+        lat_comp = _parse_list(sing_lat_comp_str, var_expr=False)
+        sing_lat_edge_str = _SING.eval('ILattice[3];').split("\n")
+        lat_edge = _parse_list(sing_lat_edge_str, var_expr=False)
+        sing_lat_divs_str = _SING.eval('print(ILattice[4]);').replace(",", "").replace("_[1]=", "").split("\n")
+        if not "empty list" in sing_lat_divs_str:
+            lat_divs = _parse_list(sing_lat_divs_str)
+
+            # Put all the data together
+            lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=data[2])
+        else:
+            lattice = None
+
+    return lattice
+
+
+def LoadChart(num, direc, 
+    atlas=None, 
+    verbose=_verbose, 
+    get_lat=True, 
+    version=2):
+
     # We check that the input is the correct type.
     if not (_is_int(num) or isinstance(num, list)):
         raise TypeError("First argument must be a list or an integer.")
@@ -56,20 +114,24 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
     r_var = _get_safe_var()
 
     # Singular code to run.
-    str_load_lib1 = 'LIB "' + pdir + _CHART_LIB + '";'
-    str_load_lib2 = 'LIB "' + pdir + 'LIB/primdec.lib";'
-    str_load_lib3 = 'LIB "' + pdir + _INT_LAT_LIB + '";'
+    str_load_lib1 = 'LIB "' + pdir + 'LIB/primdec.lib";'
+    if version <= 1:
+        str_load_lib2 = 'LIB "' + pdir + _CHART_LIB_V1 + '";'
+        str_load_lib3 = 'LIB "' + pdir + _INT_LAT_LIB_V1 + '";'
+        load_strs = [str_load_lib1, str_load_lib2, str_load_lib3]
+    else:
+        str_load_lib2 = 'LIB "' + pdir + _CHART_LIB + '";'
+        load_strs = [str_load_lib1, str_load_lib2]
     str_load_char = 'def %s = load_Chart(%s, "%s");' % (r_var, num, direc)
     str_set_ring = 'setring %s;' % (r_var)
 
     # Print statements for the user.
     if verbose >= 2:
-        print "Loading Singular library: \n%s%s" % (_indent, pdir + _CHART_LIB)
         print "Loading Singular library: \n%s%s" % (_indent, pdir + 'LIB/primdec.lib')
-        print "Loading Singular library: \n%s%s" % (_indent, pdir + _INT_LAT_LIB)
+        print "Loading Singular library: \n%s%s" % (_indent, pdir + _CHART_LIB)
         print "Loading Chart: \n%s%s" % (_indent, direc + _chart_num(num))
         print "\nRunning the following Singular code:"
-        for lib_str in (str_load_lib1, str_load_lib2, str_load_lib3):
+        for lib_str in load_strs:
             print "> " + lib_str
         print "> " + str_load_char
         print "> " + str_set_ring + "\n"
@@ -88,9 +150,13 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
     # In Sage, the Singular run is continuous, so we can make multiple calls to 
     # the same variables for example. 
     # Currently, no error checking here. 
-    _ = _SING.lib(pdir + _CHART_LIB)
     _ = _SING.lib(pdir + 'LIB/primdec.lib')
-    _ = _SING.lib(pdir + _INT_LAT_LIB)
+    if version <= 1:
+        _ = _SING.lib(pdir + _CHART_LIB_V1)
+        _ = _SING.lib(pdir + _INT_LAT_LIB_V1)
+    else:
+        _ = _SING.lib(pdir + _CHART_LIB)
+        _ = _SING.eval("ring r;") # Work around to a bug.
     _ = _SING.eval(str_load_char + "\n" + str_set_ring)
 
     # Get the basics: coeff ring and vars.
@@ -118,6 +184,7 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
     cent = _parse_list_wrapped(sing_cent_str)
 
     # Get the cone data
+    # cone_size = _SING.eval("size(Cone);")
     sing_cone_printout = _SING.eval("Cone;").split("\n")
     cone = _parse_list(sing_cone_printout) # Do not want the wrapped version
     # Here, we clean up the cone data a little bit. 
@@ -143,7 +210,7 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
         if str(jacDet)[0] == '-': # Remove the negative if it's there
             jacDet = -jacDet
     except:
-        jacDet = 1 # Currently the Jacobian is not defined for the root.
+        jacDet = 1 
     
     # Get the last map
     try:
@@ -156,41 +223,11 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
     sing_foc_str = _SING.eval("print(focus);").replace(",", "").split("\n")
     focus = _parse_list_wrapped(sing_foc_str)
 
-    # Get the info read for the intersection lattice
-    r_var2 = _get_safe_var()
-    str_load_lat = 'def %s = createInterLattice(%s, "%s");' % (r_var2, num, direc)
-    str_set_lat = 'setring %s;' % (r_var2)
-
     # Get the intersection lattice
     if get_lat and (amb_fact == 0):
-        # Print statements for the user about the intersection lattice
-        if verbose >= 2:
-            print "Creating the intersection lattice."
-            print "Running the following Singular code:"
-            print "> " + str_load_lat
-            print "> " + str_set_lat
-        
-        # Get all the data from the int lattice individually
-        _ = _SING.eval(str_load_lat)
-        _ = _SING.eval(str_set_lat)
-        sing_lat_vert_str = _SING.eval('retlist[1];').split("\n")
-        lat_vert = _parse_list(sing_lat_vert_str, var_expr=False)
-        sing_lat_comp_str = _SING.eval('retlist[2];').split("\n")
-        lat_comp = _parse_list(sing_lat_comp_str, var_expr=False)
-        sing_lat_edge_str = _SING.eval('retlist[3];').split("\n")
-        lat_edge = _parse_list(sing_lat_edge_str, var_expr=False)
-        sing_lat_divs_str = _SING.eval('print(retlist[4]);').replace(",", "").replace("_[1]=", "").split("\n")
-        lat_divs = _parse_list(sing_lat_divs_str)
-
-        # Put all the data together
-        lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=focus)
-        random_varbs = [r_var, r_var2]
-        if verbose >= 2:
-            print lattice
+        lattice = _get_inter_lattice(data=(num, direc, focus), ver=version)
     else: 
         lattice = None
-        random_varbs = [r_var]
-        # TODO: update once we can compute the intersection lattice
         if verbose >= 2 and amb_fact != 0:
             print "Cannot compute intersection lattice yet due to non-trivial ambient space."
 
@@ -199,8 +236,7 @@ def LoadChart(num, direc, atlas=None, verbose=_verbose, get_lat=True):
         lattice = None
 
     # Clean up the Singular run
-    for v in random_varbs:
-        _ = _SING.eval("kill %s;" % (v))
+    _ = _SING.eval("kill %s;" % (r_var))
 
     # Now we construct our ring to keep all of this data in one place.
     C = _chart(coeff, varbs, \

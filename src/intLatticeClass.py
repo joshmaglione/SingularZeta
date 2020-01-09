@@ -1,5 +1,5 @@
 #
-#   Copyright 2019 Joshua Maglione 
+#   Copyright 2019--2020 Joshua Maglione 
 #
 #   Distributed under MIT License
 #
@@ -158,7 +158,6 @@ class IntLattice():
         return rat_pts
 
 
-
 # There are a lot of redundancies in the intersection lattices. We remove them.
 def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose):
     div_num = len(divs)
@@ -231,8 +230,22 @@ def _remove_redundancies(comps, divs, edges, verts, focus=None, verbose=_verbose
     return IntLattice(clean_comps, clean_divs, clean_edges, clean_verts)
 
 
+# In the latest version, we need to include the focus in the intersection 
+# lattice. 
+def _include_focus(comps, divs, edges, verts, focus=None):
+    if focus == None or focus == (0,):
+        return IntLattice(comps, divs, edges, verts)
+    else:
+        make_poly = lambda f: f.polynomial(_QQ) # Sage issues...
+        newdivs = divs + list(map(make_poly, focus))
+        S = _set(range(len(divs), len(newdivs)))
+        union = lambda X: X.union(S)
+        newverts = map(union, verts)
+        return IntLattice(comps, newdivs, edges, newverts)
+
+
 # A wrapper for IntLattice for charts. It will digest certain data differently.
-def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True):
+def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True,  ver=2):
     has_empty = lambda X: bool(_set() in X)
     # Parse the data individually
     newComps = _parse_components(comps)
@@ -251,21 +264,24 @@ def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True):
         if _verbose >= 2:
             print "Passed sanity check 1."
 
-    I = _remove_redundancies(newComps, newDivs, newEdges, newVerts, focus=focus)
+    if ver <= 1:
+        I = _remove_redundancies(newComps, newDivs, newEdges, newVerts, focus=focus)
 
-    if sanity:
-        embedding = lambda f: newDivs.index(f)
-        for i in range(len(I.vertices)):
-            u = I.vertices[i]
-            old_u = _set(map(lambda x: embedding(I.divisors[x]), list(u)))
-            # Check that there is a corresponding vertex.
-            assert old_u in newVerts
-            for j in range(i+1, len(I.vertices)):
-                v = I.vertices[j]
-                if len(u) + 1 == len(v):
-                    # Check that the two statements are logically equivalent.
-                    assert bool(_set([i, j]) in I.edges) == bool(u.issubset(v))
-        if _verbose >= 2:
-            print "Passed sanity check 2."
+        if sanity:
+            embedding = lambda f: newDivs.index(f)
+            for i in range(len(I.vertices)):
+                u = I.vertices[i]
+                old_u = _set(map(lambda x: embedding(I.divisors[x]), list(u)))
+                # Check that there is a corresponding vertex.
+                assert old_u in newVerts
+                for j in range(i+1, len(I.vertices)):
+                    v = I.vertices[j]
+                    if len(u) + 1 == len(v):
+                        # Check two statements are logically equivalent.
+                        assert bool(_set([i, j]) in I.edges) == bool(u.issubset(v))
+            if _verbose >= 2:
+                print "Passed sanity check 2."
+    else:
+        I = _include_focus(newComps, newDivs, newEdges, newVerts, focus=focus)
 
     return I

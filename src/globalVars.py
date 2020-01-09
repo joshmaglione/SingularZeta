@@ -1,5 +1,5 @@
 #
-#   Copyright 2019 Joshua Maglione 
+#   Copyright 2019--2020 Joshua Maglione 
 #
 #   Distributed under MIT License
 #
@@ -15,13 +15,14 @@ _DEFAULT_LOAD_DB = True         # Boolean
 _DEFAULT_p = 'p'                # String
 _DEFAULT_t = 't'                # String
 _DEFAULT_USER_INPUT = True      # Boolean
-_DEFAULT_VERBOSE = 1            # Integer
+_DEFAULT_VERBOSE = 2            # Integer
 
 
 # Variables for Singular things
 # Defined globally in case their format/ name changes.
-_CHART_LIB = "Chart_loading.lib"
-_INT_LAT_LIB = "intersectionLattice.lib"
+_CHART_LIB_V1 = "Chart_loading.lib"
+_INT_LAT_LIB_V1 = "intersectionLattice.lib"
+_CHART_LIB = "load_Charts.lib"
 _chart_num = lambda x: "Chart" + str(x) + ".ssi" 
 
 
