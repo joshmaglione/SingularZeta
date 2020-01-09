@@ -42,7 +42,7 @@ class Atlas():
 
     # Currently, we have lower_triangular until more information is given 
     # concerning the variables. 
-    def __init__(self, direc, lower_triangular=True, verbose=_verbose):
+    def __init__(self, direc, lower_triangular=True, verbose=_verbose, version=2):
         if verbose >= 1:
             print "Loading atlas from %s" % (direc)
             if verbose >= 2:
@@ -54,7 +54,7 @@ class Atlas():
         self.directory = direc
 
         # Get the edges as a list of tuples of integers
-        self.edges = _parse_edges(direc)
+        self.edges = _parse_edges(direc, version=version)
 
         # Get the integer
         self.number_of_charts = _get_total_charts(self.edges)
@@ -72,7 +72,7 @@ class Atlas():
         # self.integrand = _get_integrand(self.root.variables, LT)
 
         # Load in all the leaves
-        self.charts = tuple([_load(i, direc) for i in self.leaves])
+        self.charts = tuple([_load(i, direc, version=version) for i in self.leaves])
 
         # TODO: Once the jacDet bug is fixed, uncomment the lines above.
         self.root = _load(1, direc, get_lat=False) # Cannot run Singular anymore

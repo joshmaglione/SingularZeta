@@ -77,7 +77,7 @@ def _get_inter_lattice(data=None, verbose=_verbose, ver=2):
             # Put all the data together
             lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=data[2])
         else:
-            lattice = None
+            lattice = _parse_lattice_data([], [], [], [[]], focus=data[2])
 
     return lattice
 

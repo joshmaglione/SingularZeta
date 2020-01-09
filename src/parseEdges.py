@@ -1,5 +1,5 @@
 #
-#   Copyright 2019 Joshua Maglione 
+#   Copyright 2019--2020 Joshua Maglione 
 #
 #   Distributed under MIT License
 #

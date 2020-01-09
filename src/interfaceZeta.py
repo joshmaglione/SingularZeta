@@ -10,6 +10,7 @@ from globalVars import _DEFAULT_t as _t
 from globalVars import _DEFAULT_VERBOSE as _verbose
 from sage.all import Matrix as _matrix
 from sage.all import var as _var
+from sage.all import Permutations as _perms
 from sage.all import Polyhedron as _polyhedron
 from sage.all import PolynomialRing as _polyring
 from sage.all import QQ as _QQ
@@ -78,6 +79,53 @@ def _cone_mat(varbs, cone):
     to_tup = lambda x: tuple(x)
     return list(map(to_tup, cone_conditions))
 
+# If we cannot subsitute all variables at once, sub in as much as we can first 
+# before factoring and simplifying.
+# Here we generate a number of random permutations for subsituting. This should 
+# be seen as trying a number of random substitutions and seeing which one is 
+# both legal and has the fewest number of variables. At the end, we simplify 
+# the one with the few number of variables. 
+def _get_sub(Z, subs):
+    if _verbose >= 2:
+        print "Had problems with substituting. Searching for alternatives."
+    keys = subs.keys()
+    n = len(keys)
+    rand_perms = [list(_perms(n).random_element()) for _ in range(n)]
+    shuffle = lambda S, k: [S[rand_perms[k][i]-1] for i in range(n)]
+    shuff_keys = [shuffle(keys, k) for k in range(n)]
+    vals = [-1 for _ in range(n)]
+    funcs = [0 for _ in range(n)]
+    for i in range(n):
+        for j in range(1, n):
+            if vals[i] == -1:
+                partial_subs = {shuff_keys[i][k] : subs[shuff_keys[i][k]] 
+                    for k in range(j)}
+                try:
+                    f = Z.subs(partial_subs)
+                except ValueError:
+                    vals[i] = i
+                    if j > 0:
+                        partial_subs = {shuff_keys[i][k] : subs[shuff_keys[i][k]] for k in range(j-1)}
+                        f = Z.subs(partial_subs)
+                    else:
+                        f = Z
+                    funcs[i] = f
+
+    def count_vars(f):
+        try:
+            return len(f.variables())
+        except AttributeError:
+            return len(Z.variables()) + 1
+    num_vars = map(lambda f: count_vars(f), funcs)
+    m = min(num_vars)
+    k = num_vars.index(m)
+    remaining = {shuff_keys[k][j] : subs[shuff_keys[k][j]] for j in range(vals[k])}
+
+    if _verbose >= 2:
+        print "Most optimal option found has %s variables, down from %s." % (m, len(Z.variables()))
+
+    return (funcs[k].simplify().factor()).subs(remaining).simplify().factor()
+
 
 # Given a monomial chart and its integrand, return its generating function. The 
 # output is from Zeta.
@@ -143,5 +191,8 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
 
     if zed == 0:
         return 0
-    zed = zed.subs(var_change).simplify().factor()
+    try:
+        zed = zed.subs(var_change).simplify().factor()
+    except ValueError:
+        zed = _get_sub(zed, var_change)
     return zed

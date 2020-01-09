@@ -57,6 +57,8 @@ def _parse_edges(edge_list, vert_list, empty=True):
         edge = [vert_flat.index(v1), vert_flat.index(v2)]
         new_edges.append(edge)
     if empty:
+        if len(vert_list) <= 1:
+            return [_set()]
         for v in vert_list[1]:
             new_edges.append([0, vert_flat.index(v)])
 
