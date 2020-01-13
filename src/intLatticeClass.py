@@ -12,6 +12,7 @@ from sage.all import AffineSpace as _affine
 from sage.all import QQ as _QQ
 from sage.all import Set as _set
 from sage.all import var as _var
+from sage.all import PolynomialRing as _polyring
 from rationalPoints import _rational_points
 
 # Parses the list of vertices. Changes from {0, 1}-tuple to a set.
@@ -36,8 +37,12 @@ def _parse_vertices(vert_list):
 
 # Parses the divisor list from Singular after passing through our expression 
 # parser.
-def _parse_divisors(div_list):
-    divs = [d.polynomial(_QQ) for d in div_list]
+def _parse_divisors(div_list, varbs=None):
+    if varbs == None:
+        divs = [d.polynomial(_QQ) for d in div_list]
+    else:
+        P = _polyring(_QQ, varbs)
+        divs = [P(d) for d in div_list]
     return divs
 
 
@@ -247,11 +252,11 @@ def _include_focus(comps, divs, edges, verts, focus=None):
 
 
 # A wrapper for IntLattice for charts. It will digest certain data differently.
-def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True,  ver=2):
+def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True,  ver=2, variables=None):
     has_empty = lambda X: bool(_set() in X)
     # Parse the data individually
     newComps = _parse_components(comps)
-    newDivs = _parse_divisors(divs)
+    newDivs = _parse_divisors(divs, varbs=variables)
     newVerts = _parse_vertices(verts)
     newEdges = _parse_edges(edges, verts, empty=has_empty(newVerts))
 

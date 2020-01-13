@@ -29,7 +29,7 @@ def _get_safe_var():
     return r_var
 
 
-def _get_inter_lattice(data=None, verbose=_verbose, ver=2):
+def _get_inter_lattice(data=None, verbose=_verbose, varbs=None, ver=2):
     if ver <= 1:
         num, direc, focus = data
         # Get the info read for the intersection lattice
@@ -57,7 +57,7 @@ def _get_inter_lattice(data=None, verbose=_verbose, ver=2):
         lat_divs = _parse_list(sing_lat_divs_str)
 
         # Put all the data together
-        lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=focus, ver=1)
+        lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=focus, variables=varbs, ver=1)
         
         if verbose >= 2:
             print lattice
@@ -75,7 +75,7 @@ def _get_inter_lattice(data=None, verbose=_verbose, ver=2):
             lat_divs = _parse_list(sing_lat_divs_str)
 
             # Put all the data together
-            lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=data[2])
+            lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=data[2], variables=varbs)
         else:
             lattice = _parse_lattice_data([], [], [], [[]], focus=data[2])
 
@@ -235,7 +235,7 @@ def LoadChart(num, direc,
 
     # Get the intersection lattice
     if get_lat and (version >= 2 or amb_fact == 0):
-        lattice = _get_inter_lattice(data=(num, direc, focus), ver=version)
+        lattice = _get_inter_lattice(data=(num, direc, focus), varbs=varbs, ver=version)
     else: 
         lattice = None
         if verbose <= 1 and amb_fact != 0:

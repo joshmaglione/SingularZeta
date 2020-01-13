@@ -252,8 +252,10 @@ def _binom_system(S):
 
 # Given the variety and a label, ask the user to count the p-rational points on 
 # the variety. 
-def _ask_user(variety, label):
-    print '\nCount the number of points on:\n%s' % (variety)
+def _ask_user(Aff, S, label):
+    print '\nCount the number of points on:\n%s defined by:' % (Aff)
+    for f in S:
+        print _indent + '%s' % (f)
     need_input = True
     not_poly = {_var('n'), _var('N')}
     while need_input:
@@ -261,7 +263,7 @@ def _ask_user(variety, label):
         exp_str = input('How many? Use %s if needed.\n' % (_p))
         if exp_str in not_poly:
             need_input = False
-            C = _var('C' + label)
+            C = _var('C' + label.replace(".", "_"))
         else:
             try:
                 need_input = False
@@ -276,16 +278,18 @@ def _ask_user(variety, label):
 # the number of p-rational points on the corresponding variety or return data 
 # for a human to compute. 
 def _rational_points(A, S, user_input=_user_input, label=''):
-    print S
     import Zeta as Z
     Aff = _affine_space(len(A.gens()), _QQ, A.gens())
     d = Aff.dimension()
-    variety = Aff.subscheme(S)
+    # variety = Aff.subscheme(S) # this was changing variable names...
     p = _var(_p)
-    print S
+
     # If S is trivial, then return the trivial count.
     if S == [0]: 
-        return tuple([p**d, variety])
+        return tuple([p**d, (Aff, S)])
+
+    P = _poly_ring(_QQ, d, A.gens())
+    S = map(lambda f: P(f), S)
 
     # Split the system into linears and non-linears. 
     is_linear = lambda x: x.degree() == 1
@@ -301,8 +305,14 @@ def _rational_points(A, S, user_input=_user_input, label=''):
         # We substitute the linear terms in because this is can easily be done, 
         # and then we call our function again: with only nonlinear polynomials.
         if len(lin_polys) > 0:
+            print lin_polys, nonlin_polys
             const_term = lambda f: f.subs({f.variables()[0] : 0})
             sub_dict = {f.variables()[0] : -1*const_term(f) for f in lin_polys}
+            def sub_func(F):
+                restrict_sub_dict = {x: sub_dict[x] for x in sub_dict if x in F.variables()}
+                print restrict_sub_dict
+                return F.subs(restrict_sub_dict)
+            # new_sys = map(sub_func, nonlin_polys)
             new_sys = map(lambda x: x.subs(sub_dict), nonlin_polys)
             new_vars = filter(lambda x: not x in sub_dict.keys(), Aff.gens())
             new_aff = _affine_space(len(new_vars), _QQ, new_vars)
@@ -331,14 +341,15 @@ def _rational_points(A, S, user_input=_user_input, label=''):
                         # We turn off symbolic counting
                         z_symb_curr = Z.common.symbolic
                         Z.common.symbolic = False
+                        print "Asking Tobias about \n%s" % (S)
                         N = _count_pts(S)
                         Z.common.symbolic = z_symb_curr
                     except _CountException: 
                         # Now we ask the user or skip
                         if user_input:
-                            N = _ask_user(variety, label)
+                            N = _ask_user(Aff, S, label)
                             _save_to_lookup(Aff, S, data, N)
                         else:
                             N = _var('C' + label)
     
-    return tuple([N, variety])
+    return tuple([N, (Aff, S)])
