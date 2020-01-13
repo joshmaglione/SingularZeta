@@ -13,7 +13,7 @@ from sage.all import QQ as _QQ
 from sage.all import Set as _set
 from sage.all import var as _var
 from sage.all import PolynomialRing as _polyring
-from rationalPoints import _rational_points
+from rationalPoints import _rational_points, _get_smaller_poly_ring
 
 # Parses the list of vertices. Changes from {0, 1}-tuple to a set.
 def _parse_vertices(vert_list):
@@ -141,19 +141,20 @@ class IntLattice():
         if self.chart == None:
             raise AttributeError('Expected a chart associated to intersection lattice.')
 
-        # Construct the ambient space
-        A = self.chart.AmbientSpace() # Polynomial ring
-        hyp_surf = reduce(lambda x, y: x*y, self.divisors, A.coerce(1))
-        # We restrict to a potentially smaller affine space. 
-        res_aff = _affine(len(hyp_surf.variables()), _QQ, hyp_surf.variables())
+        if _verbose >= 2:
+            print "Counting the F_p-rational points of Chart %s." % (self.chart._id)
+
+        # Get the underlying polynomial ring (over the variables with 
+        # non-normal crossings)
+        P, divs, ambient = _get_smaller_poly_ring(self.divisors, self.chart.ambientFactor, self.chart.coefficients)
 
         # Now we get the number of p-rational points. 
         rat_pts = []
         for i in range(len(self.vertices)):
             lab = str(self.chart._id) + '_' + str(i)
-            polys = _get_defining_ideal(self.divisors, self.vertices[i])
-            rat_pt_dat = _rational_points(res_aff, polys, user_input=user_input,
-                label=lab)
+            polys = _get_defining_ideal(divs, self.vertices[i])
+            rat_pt_dat = _rational_points(P, polys, ambient, 
+                user_input=user_input, label=lab)
             rat_pts.append(rat_pt_dat) # Want it to be flattened
 
         self.p_points = rat_pts

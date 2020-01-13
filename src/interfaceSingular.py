@@ -181,7 +181,7 @@ def LoadChart(num, direc,
             print "Ambient space not necessarily affine."
         amb_fact = _parse_list_wrapped(sing_amb_fact)
     else:
-        amb_fact = 0
+        amb_fact = tuple([0])
 
 
     # Get the birational map data
@@ -234,11 +234,11 @@ def LoadChart(num, direc,
     focus = _parse_list_wrapped(sing_foc_str)
 
     # Get the intersection lattice
-    if get_lat and (version >= 2 or amb_fact == 0):
+    if get_lat and (version >= 2 or amb_fact[0] == 0):
         lattice = _get_inter_lattice(data=(num, direc, focus), varbs=varbs, ver=version)
     else: 
         lattice = None
-        if verbose <= 1 and amb_fact != 0:
+        if verbose <= 1 and amb_fact[0] != 0:
             print "Cannot compute intersection lattice due to non-trivial ambient space."
 
     # TODO: When the bug for chart 66 is fixed, remove this.

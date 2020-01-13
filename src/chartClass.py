@@ -229,6 +229,8 @@ class Chart():
         self._parent = parent
         self._subcharts = None
         self._integralFactor = 1
+        P = _polyring(R, len(X), X)
+        self._polynomial_ring = P
 
         # 'Public' attributes
         self.coefficients = R
@@ -238,7 +240,7 @@ class Chart():
         self.cent = cent
         self.cone = cone
         self.exDivisors = exDivs
-        self.ambientFactor = factor
+        self.ambientFactor = map(lambda f: P(f), factor)
         self.focus = focus
         self.intLat = intLat
         self.jacDet = jacDet
@@ -248,6 +250,7 @@ class Chart():
         # We make sure the intersection lattice can point back to the chart
         if intLat != None:
             self.intLat.chart = self
+            self.intLat.divisors = map(lambda f: P(f), self.intLat.divisors)
 
 
     def __repr__(self):

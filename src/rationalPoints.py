@@ -17,6 +17,7 @@ from sage.all import GF as _GF
 from sage.all import SR as _SR
 from sage.all import QQ as _QQ
 from sage.all import Word as _word
+from sage.all import Set as _set
 from parseSingularExpr import _parse_user_input
 from Zeta.torus import CountException as _CountException
 
@@ -24,43 +25,36 @@ _verbose = False
 
 # The following is a function written by Tobias Rossmann for counting the 
 # F_q-rational points on varieties given by a sequence F. 
-def _count_pts(F, q=None, torus=False):
+def _count_pts(F, torus=False):
     # Given a bunch of ordinary polynomials F, try to symbolically
     # count the number of GF(q) points of V(F).
     assert F
 
+    # Pre-conditioning added my Josh.
+    mult = lambda x, y: x*y
+    F_poly = reduce(mult, F, 1)
+    P = _poly_ring(_QQ, len(F_poly.variables()), F_poly.variables())
+    F = map(lambda f: P(f), F)
+
     from itertools import product
     
-    if q:
-        R = F[0].parent()
-        n = R.ngens()
-        K = _poly_ring(_GF(q),n, R.gens())
-        G = [K(f) for f in F]
-        res = 0
-        for x in product(_GF(q),repeat=n):
-            if torus and not prod(x):
-                continue
-            if all(g(x) == 0 for g in G):
-                res += 1
-        return res
-    else:
-        q = _var(_p)
-        R = F[0].parent()
-        n = R.ngens()
+    q = _var(_p)
+    R = F[0].parent()
+    n = R.ngens()
 
-        from Zeta.torus import SubvarietyOfTorus
+    from Zeta.torus import SubvarietyOfTorus
 
-        if torus:
-            return SubvarietyOfTorus([F]).count().subs({_var('q') : q})
-        
-        total = _SR(0)
-        for S in _subsets(R.gens()):
-            D = {str(x): R(0) if x in S else x for x in R.gens()}
-            G = [f(**D) for f in F]
-            V = SubvarietyOfTorus(G)
-            cnt = V.count().subs({_var('q') : q})/(q-1)**len(S)
-            total += cnt
-        return total.factor() if total else total
+    if torus:
+        return SubvarietyOfTorus([F]).count().subs({_var('q') : q})
+    
+    total = _SR(0)
+    for S in _subsets(R.gens()):
+        D = {str(x): R(0) if x in S else x for x in R.gens()}
+        G = [f(**D) for f in F]
+        V = SubvarietyOfTorus(G)
+        cnt = V.count().subs({_var('q') : q})/(q-1)**len(S)
+        total += cnt
+    return total.factor() if total else total
 
 
 # Given the ambient space and a system of polynomials, we return a lookup key 
@@ -76,7 +70,7 @@ def _build_key(d, Q, S):
     mult = lambda x, y: x*y
 
     # Get the relevant data from the ambient space.
-    if Q != []:
+    if Q != tuple([0]):
         varbs_Q = reduce(mult, Q, 1).variables()
         k_Q = len(varbs_Q)
     else:
@@ -94,8 +88,12 @@ def _build_key(d, Q, S):
 # Given the ambient space, the polynomial system and a variable, return the 
 # degree vector of the variable in the defining ideal and the system.
 def _get_deg_vec(Q, S, x):
-    deg = lambda f: f.degree(x)
-    return tuple(map(deg, Q + S))
+    def deg(f):
+        if f != 0:
+            return f.degree(x)
+        else:
+            return 0
+    return tuple(map(deg, list(Q) + S))
 
 
 # Given the data from the variety, we convert it to a list of values that we 
@@ -116,7 +114,11 @@ def _build_data(Q, S, varbs, verbose=_verbose):
     # Build the change of variables dictionary
     var_change = {varbs[perm[i]-1] : _var("X" + str(i)) for i in range(n)}
     # Build the change of variables function
-    embed = lambda f: f.subs({x : var_change[x] for x in f.variables()})
+    def embed(f): 
+        if f != 0:
+            f.subs({x : var_change[x] for x in f.variables()})
+        else:
+            return 0
 
     # Get the new data
     Q_new = map(embed, Q)
@@ -146,17 +148,8 @@ def _decide_equiv(data, table, verbose=_verbose):
 # Given an ambient space and a polynomial system, return a pair: a boolean 
 # stating whether we have seen this data before and either the key or the 
 # count. The second entry depends on the first (not good typing sorry!). 
-def _check_saved_table(A, S, verbose=_verbose):
-    # We need to know if there is a defining polynomial
-    try:
-        I = A.defining_ideal() # Only place where an error can occur
-        Q = I.gens()
-        C = A.cover_ring()
-    except:
-        Q = []
-        C = A
-
-    key_AS, sys_varbs = _build_key(A.dimension(), Q, S)
+def _check_saved_table(P, S, ambient, verbose=_verbose):
+    key_AS, sys_varbs = _build_key(len(P.gens()), ambient, S)
     known_keys = _lookup.keys()
 
     # check to see if we have even used this key before
@@ -168,7 +161,7 @@ def _check_saved_table(A, S, verbose=_verbose):
 
     # at this point we know we can do a lookup safely
     table = _lookup[key_AS]
-    data = _build_data(Q, S, list(C.gens()))
+    data = _build_data(ambient, S, list(P.gens()))
 
     # decide if our system has been saved in our table
     if verbose >= 2:
@@ -188,16 +181,8 @@ def _check_saved_table(A, S, verbose=_verbose):
     return output
     
 
-def _save_to_lookup(A, S, key, count, verbose=_verbose):
-    # We need to know if there is a defining polynomial
-    try:
-        I = A.defining_ideal() # Only place where an error can occur
-        Q = I.gens()
-        C = A.cover_ring()
-    except:
-        Q = []
-        C = A
-    most_data = _build_data(Q, S, list(C.gens()))
+def _save_to_lookup(P, S, ambient, key, count, verbose=_verbose):
+    most_data = _build_data(ambient, S, list(P.gens()))
     data = most_data + [count]
 
     assert key in _lookup.keys()
@@ -273,23 +258,44 @@ def _ask_user(Aff, S, label):
                 need_input = True
     return C
 
+# Get the underlying polynomial ring (over the variables with non-normal 
+# crossings)
+def _get_smaller_poly_ring(S, ambient, R):
+    if 0 in ambient:
+        ambient_fact = [1]
+    else:
+        ambient_fact = list(ambient)
+    hyper = reduce(lambda x, y: x*y, S + ambient_fact)
+    varbs = hyper.variables()
+    P = _poly_ring(R, len(varbs), varbs)
+    embed = lambda f: P(f)
+    S_new = map(embed, S)
+    ambient_new = map(embed, ambient)
+    return P, S_new, ambient_new
 
 # Given an ambient space A and a system of polynomials, attempt to either count 
 # the number of p-rational points on the corresponding variety or return data 
 # for a human to compute. 
-def _rational_points(A, S, user_input=_user_input, label=''):
+def _rational_points(P, S, ambient,
+    user_input=_user_input, 
+    label=''):
+
     import Zeta as Z
-    Aff = _affine_space(len(A.gens()), _QQ, A.gens())
-    d = Aff.dimension()
-    # variety = Aff.subscheme(S) # this was changing variable names...
+    d = len(P.gens())
     p = _var(_p)
 
-    # If S is trivial, then return the trivial count.
-    if S == [0]: 
-        return tuple([p**d, (Aff, S)])
+    # We might need to treat the ambient polynomials differently...
+    if S == [0] and not 0 in ambient:
+        S = list(ambient)
+    elif not 0 in ambient:
+        S += list(ambient)
 
-    P = _poly_ring(_QQ, d, A.gens())
-    S = map(lambda f: P(f), S)
+    # If S is trivial and ambient is trivial, then return the trivial count.
+    if S == [0]: 
+        return tuple([p**d, (P, S, ambient)])
+
+    # Remove possible repeats
+    S = list(_set(S))
 
     # Split the system into linears and non-linears. 
     is_linear = lambda x: x.degree() == 1
@@ -305,20 +311,14 @@ def _rational_points(A, S, user_input=_user_input, label=''):
         # We substitute the linear terms in because this is can easily be done, 
         # and then we call our function again: with only nonlinear polynomials.
         if len(lin_polys) > 0:
-            print lin_polys, nonlin_polys
             const_term = lambda f: f.subs({f.variables()[0] : 0})
             sub_dict = {f.variables()[0] : -1*const_term(f) for f in lin_polys}
-            def sub_func(F):
-                restrict_sub_dict = {x: sub_dict[x] for x in sub_dict if x in F.variables()}
-                print restrict_sub_dict
-                return F.subs(restrict_sub_dict)
-            # new_sys = map(sub_func, nonlin_polys)
             new_sys = map(lambda x: x.subs(sub_dict), nonlin_polys)
-            new_vars = filter(lambda x: not x in sub_dict.keys(), Aff.gens())
-            new_aff = _affine_space(len(new_vars), _QQ, new_vars)
-            N = _rational_points(new_aff, new_sys, 
+            P_new, smaller_sys, ambient_update = _get_smaller_poly_ring(new_sys, ambient, P.base_ring())
+            N = _rational_points(P_new, smaller_sys, 
                 user_input=user_input, 
-                label=label)[0]
+                label=label,
+                ambient=ambient_update)[0]
         else:
             # First we check if there's a possibility that we can solve this
             # I can only think of a nice binomial system where the 
@@ -331,7 +331,9 @@ def _rational_points(A, S, user_input=_user_input, label=''):
                 N *= p**(d - num_vars)
             else:
                 # First we look up our table
-                check, data = _check_saved_table(Aff, S)
+                if _verbose >= 2:
+                    print "Searching through a table of order %s" % (len(_lookup))
+                check, data = _check_saved_table(P, S, ambient)
                 if check: 
                     N = data
                 else:
@@ -341,15 +343,18 @@ def _rational_points(A, S, user_input=_user_input, label=''):
                         # We turn off symbolic counting
                         z_symb_curr = Z.common.symbolic
                         Z.common.symbolic = False
-                        print "Asking Tobias about \n%s" % (S)
+                        if _verbose >= 2:
+                            print "Asking Tobias about \n%s" % (S)
                         N = _count_pts(S)
+                        if _verbose >= 2:
+                            print "Done"
                         Z.common.symbolic = z_symb_curr
                     except _CountException: 
                         # Now we ask the user or skip
                         if user_input:
-                            N = _ask_user(Aff, S, label)
-                            _save_to_lookup(Aff, S, data, N)
+                            N = _ask_user(P, S, label)
+                            _save_to_lookup(P, S, ambient, data, N)
                         else:
                             N = _var('C' + label)
     
-    return tuple([N, (Aff, S)])
+    return tuple([N, (P, S)])
