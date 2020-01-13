@@ -265,10 +265,14 @@ def _get_smaller_poly_ring(S, ambient, R):
         ambient_fact = [1]
     else:
         ambient_fact = list(ambient)
+    while 0 in S:
+        k = S.index(0)
+        S = S[:k] + S[k+1:]
     hyper = reduce(lambda x, y: x*y, S + ambient_fact)
     varbs = hyper.variables()
     P = _poly_ring(R, len(varbs), varbs)
     embed = lambda f: P(f)
+    print S, ambient, P
     S_new = map(embed, S)
     ambient_new = map(embed, ambient)
     return P, S_new, ambient_new
@@ -355,6 +359,6 @@ def _rational_points(P, S, ambient,
                             N = _ask_user(P, S, label)
                             _save_to_lookup(P, S, ambient, data, N)
                         else:
-                            N = _var('C' + label)
+                            N = _var('C' + label.replace(".", "_"))
     
     return tuple([N, (P, S)])
