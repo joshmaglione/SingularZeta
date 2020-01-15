@@ -244,8 +244,10 @@ def _include_focus(comps, divs, edges, verts, focus=None):
     if focus == None or focus == (0,):
         return IntLattice(comps, divs, edges, verts)
     else:
+        # don't want repeats
+        new_foci_divs = filter(lambda f: not f in divs, focus) 
         make_poly = lambda f: f.polynomial(_QQ) # Sage issues...
-        newdivs = divs + list(map(make_poly, focus))
+        newdivs = divs + list(map(make_poly, new_foci_divs))
         S = _set(range(len(divs), len(newdivs)))
         union = lambda X: X.union(S)
         newverts = map(union, verts)

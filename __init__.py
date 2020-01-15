@@ -90,6 +90,7 @@ del Zeta_ver
 # foo instead of foo.src
 print _indent + "Importing functions."
 from src.atlasClass import *
+from src.atlasReport import *
 from src.chartClass import *
 from src.integrandClass import *
 from src.interfaceSingular import *

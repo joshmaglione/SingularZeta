@@ -272,7 +272,6 @@ def _get_smaller_poly_ring(S, ambient, R):
     varbs = hyper.variables()
     P = _poly_ring(R, len(varbs), varbs)
     embed = lambda f: P(f)
-    print S, ambient, P
     S_new = map(embed, S)
     ambient_new = map(embed, ambient)
     return P, S_new, ambient_new
