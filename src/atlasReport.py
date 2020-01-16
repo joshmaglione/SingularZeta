@@ -22,7 +22,7 @@ def _get_atlas_name(A):
 # "\begin{document}."
 def _preamble(title=None, author=None):
     lines = [
-        "\\documentclass[a4paper]{amsart}\n",
+        "\\documentclass[a4paper]{article}\n",
         "\\usepackage{enumerate}",
         "\\usepackage{hyperref}",
         "\\hypersetup{",
@@ -35,6 +35,7 @@ def _preamble(title=None, author=None):
         "\\usepackage{amsmath}",
         "\\usepackage{amsthm}",
         "\\usepackage{amssymb}",
+        "\\usepackage[margin=2cm]{geometry}",
         "\\usepackage{mathpazo}",
         "\\usepackage{url}",
         "\\usepackage[labelformat=simple]{subcaption}",
@@ -92,10 +93,9 @@ def _poly_data_to_latex(P):
     system = P[1]
     gens = P[0].gens()
     def _format_system(S):
-        poly_sys = "$\\begin{array}{c} "
         sys_str = map(lambda f: latex(f), S)
-        poly_sys = reduce(lambda x, y: x + y + "\\\\ ", sys_str, poly_sys)
-        return poly_sys[:-3] + " \\end{array}$"
+        poly_sys = reduce(lambda x, y: x + y + ",\\; ", sys_str, "$")
+        return poly_sys[:-4] + "$"
     if len(system) <= 1:
         return _format_poly(system[0]), len(gens)
     else:
@@ -120,10 +120,9 @@ def _build_Fp_table(A):
         V = C.intLat.vertices
         Fp = C.intLat.pRationalPoints()
         data = zip(V, Fp)
-        chart_header = ["\t\t\\multirow{%s}{*}{%s}" % (len(V), ID)]
 
         def get_info(X):
-            info = "\t\t\t%s & " % (_set_to_latex(X[0]))
+            info = "\t\t%s & %s & " % (ID, _set_to_latex(X[0]))
             info += "%s & %s & " % (_poly_data_to_latex(X[1][1]))
             if not "C" in str(X[1][0]):
                 info += _format_poly(X[1][0])
@@ -132,7 +131,7 @@ def _build_Fp_table(A):
 
         chart_section = map(get_info, data)
         chart_section[-1] = chart_section[-1] + " \\hline"
-        return chart_header + chart_section
+        return chart_section
 
     # Get all the chart data from extraction, and flatten it down.
     table_main = reduce(lambda x, y: x + y, map(extraction, A.charts))

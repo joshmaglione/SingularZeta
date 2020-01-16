@@ -304,6 +304,8 @@ def _rational_points(P, S, ambient,
     is_linear = lambda x: x.degree() == 1
     lin_polys = filter(is_linear, S)
     nonlin_polys = filter(lambda x: not is_linear(x), S)
+    T = S
+    P_new = P
 
     if len(nonlin_polys) == 0: # common enough to warrant
         # Linear system
@@ -318,10 +320,12 @@ def _rational_points(P, S, ambient,
             sub_dict = {f.variables()[0] : -1*const_term(f) for f in lin_polys}
             new_sys = map(lambda x: x.subs(sub_dict), nonlin_polys)
             P_new, smaller_sys, ambient_update = _get_smaller_poly_ring(new_sys, ambient, P.base_ring())
-            N = _rational_points(P_new, smaller_sys, 
+            N, new_data = _rational_points(P_new, smaller_sys, 
                 user_input=user_input, 
                 label=label,
-                ambient=ambient_update)[0]
+                ambient=ambient_update)
+            T = new_data["simplified_system"]
+            P_new = new_data["simplified_ring"]
         else:
             # First we check if there's a possibility that we can solve this
             # I can only think of a nice binomial system where the 
@@ -359,5 +363,11 @@ def _rational_points(P, S, ambient,
                             _save_to_lookup(P, S, ambient, data, N)
                         else:
                             N = _var('C' + label.replace(".", "_"))
-    
-    return tuple([N, (P, S)])
+
+    data = {
+        "original_ring": P, 
+        "original_system": S, 
+        "simplified_ring": P_new,
+        "simplified_system": T
+    }
+    return tuple([N, data])
