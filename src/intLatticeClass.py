@@ -146,15 +146,22 @@ class IntLattice():
 
         # Get the underlying polynomial ring (over the variables with 
         # non-normal crossings)
-        P, divs, ambient = _get_smaller_poly_ring(self.divisors, self.chart.ambientFactor, self.chart.coefficients)
+        P, divs, ambient = _get_smaller_poly_ring(self.divisors,  self.chart.coefficients, ambient=self.chart.ambientFactor)
 
         # Now we get the number of p-rational points. 
         rat_pts = []
         for i in range(len(self.vertices)):
             lab = str(self.chart._id) + '_' + str(i)
             polys = _get_defining_ideal(divs, self.vertices[i])
-            rat_pt_dat = _rational_points(P, polys, ambient, 
-                user_input=user_input, label=lab)
+            if _verbose >= 2:
+                print _indent + "Counting points on vertex %s." % (self.vertices[i])
+            system = polys
+            if not 0 in ambient:
+                if polys == [0]:
+                    system = ambient
+                else:
+                    system += ambient
+            rat_pt_dat = _rational_points(P, system, user_input=user_input, label=lab)
             rat_pts.append(rat_pt_dat) # Want it to be flattened
 
         self.p_points = rat_pts
