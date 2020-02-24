@@ -220,9 +220,7 @@ class Chart():
         identity = None,
         intLat = None,
         jacDet = None,
-        lastMap = None,
-        parent = None,
-        path = None): 
+        parent = None): 
 
         # 'Hidden' attributes
         self._id = identity
@@ -244,8 +242,6 @@ class Chart():
         self.focus = focus
         self.intLat = intLat
         self.jacDet = jacDet
-        self.lastMap = lastMap
-        self.path = path
 
         # We make sure the intersection lattice can point back to the chart
         if intLat != None:

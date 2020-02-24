@@ -221,13 +221,6 @@ def LoadChart(num, direc,
             jacDet = -jacDet
     except:
         jacDet = 1 
-    
-    # Get the last map
-    try:
-        sing_lm_str = _SING.eval("print(lastMap);").replace(",", "").split("\n")
-        lastmap = _parse_list_wrapped(sing_lm_str)
-    except:
-        lastmap = None
 
     # Get the focus
     sing_foc_str = _SING.eval("print(focus);").replace(",", "").split("\n")
@@ -259,7 +252,6 @@ def LoadChart(num, direc,
         focus=focus,
         identity=num,
         intLat=lattice,
-        jacDet=jacDet,
-        lastMap=lastmap)
+        jacDet=jacDet)
 
     return C
