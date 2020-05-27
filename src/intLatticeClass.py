@@ -142,7 +142,7 @@ class IntLattice():
             raise AttributeError('Expected a chart associated to intersection lattice.')
 
         if _verbose >= 2:
-            print "Counting the F_p-rational points of Chart %s." % (self.chart._id)
+            print("Counting the F_p-rational points of Chart %s." % (self.chart._id))
 
         # Get the underlying polynomial ring (over the variables with 
         # non-normal crossings)
@@ -154,7 +154,7 @@ class IntLattice():
             lab = str(self.chart._id) + '_' + str(i)
             polys = _get_defining_ideal(divs, self.vertices[i])
             if _verbose >= 2:
-                print _indent + "Counting points on vertex %s." % (self.vertices[i])
+                print(_indent + "Counting points on vertex %s." % (self.vertices[i]))
             system = polys
             if not 0 in ambient:
                 if polys == [0]:
@@ -279,7 +279,7 @@ def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True,  ver
                     # Check that the two statements are logically equivalent.
                     assert bool(_set([i, j]) in newEdges) == bool(u.issubset(v))
         if _verbose >= 2:
-            print "Passed sanity check 1."
+            print("Passed sanity check 1.")
 
     if ver <= 1:
         I = _remove_redundancies(newComps, newDivs, newEdges, newVerts, focus=focus)
@@ -297,7 +297,7 @@ def _parse_lattice_data(comps, divs, edges, verts, focus=None, sanity=True,  ver
                         # Check two statements are logically equivalent.
                         assert bool(_set([i, j]) in I.edges) == bool(u.issubset(v))
             if _verbose >= 2:
-                print "Passed sanity check 2."
+                print("Passed sanity check 2.")
     else:
         I = _include_focus(newComps, newDivs, newEdges, newVerts, focus=focus)
 

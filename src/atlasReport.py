@@ -332,7 +332,7 @@ def Report(A, file=""):
     nonpoly_chrts = list(filter(nonpoly, A.charts))
 
     if _verbose >= 1:
-        print "Guessing polynomial Fp-point counts."
+        print("Guessing polynomial Fp-point counts.")
 
     nonpoly_exists = False
     guess_exists = False

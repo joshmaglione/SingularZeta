@@ -315,19 +315,19 @@ class Chart():
         # Print statements for the user
         list_polys = lambda x, y: str(x) + ",\n" + _indent + str(y)
         if _verbose >= 1:
-            print "The intersection lattice contains:"
-            print "%s%s vertices," % (_indent, len(verts))
-            print "%s%s edges," % (_indent, len(self.intLat.edges))
-            print "%s%s divisors." % (_indent, len(self.intLat.divisors))
-            print "The divisors are:"
-            print "%s%s" % (_indent, reduce(list_polys, self.intLat.divisors))
-            print "We construct a subchart for every vertex in the lattice."
+            print("The intersection lattice contains:")
+            print("%s%s vertices," % (_indent, len(verts)))
+            print("%s%s edges," % (_indent, len(self.intLat.edges)))
+            print("%s%s divisors." % (_indent, len(self.intLat.divisors)))
+            print("The divisors are:")
+            print("%s%s" % (_indent, reduce(list_polys, self.intLat.divisors)))
+            print("We construct a subchart for every vertex in the lattice.")
 
         # Visit every vertex and construct a corresponding (monomial) subchart.
         charts = [_construct_subchart(self, v, verbose=verbose) for v in verts]
 
         if _verbose >= 1:
-            print "Computing the p-rational points for each vertex in the intersection lattice. "
+            print("Computing the p-rational points for each vertex in the intersection lattice. ")
 
         # Next we determine the p-rational points on the charts
         _ = self.intLat.pRationalPoints(user_input=_user_input)
@@ -339,7 +339,7 @@ class Chart():
             charts[i]._integralFactor *= p_rat_pts[i]
 
         if verbose >= 2:
-            print "We are verifying that all subcharts are monomial..."
+            print("We are verifying that all subcharts are monomial...")
         for i in range(len(charts)):
             C = charts[i]
             if not C.IsMonomial():
@@ -348,7 +348,7 @@ class Chart():
         self._subcharts = tuple(charts)
 
         if _verbose >= 2:
-            print _indent + "Passed."
+            print(_indent + "Passed.")
 
         return tuple(charts)
 
@@ -356,8 +356,8 @@ class Chart():
     # Compute the integral for the zeta function on this chart
     def ZetaIntegral(self, user_input=_user_input, verbose=_verbose):
         if verbose >= 1: 
-            print "="*79
-            print "Solving the integral for Chart %s." % (self._id)
+            print("="*79)
+            print("Solving the integral for Chart %s." % (self._id))
 
         # TODO: Delete this once we have everything automated!
         if self.atlas != None and "n4_" in self.atlas.directory:
@@ -374,26 +374,26 @@ class Chart():
             subcharts = [self]
         else:
             if _verbose >= 2:
-                print "Constructing monomial subcharts."
+                print("Constructing monomial subcharts.")
             # First we get the monomial subcharts
             subcharts = self.Subcharts(verbose=verbose)
 
         if _verbose >= 2:
-            print "Constructing integral."
+            print("Constructing integral.")
 
         # Now we determine the integrands for each subchart
         build_int = lambda C: _map_integrand(self.atlas, C)
         integrands = map(build_int, subcharts)
 
         if _verbose >= 1:
-            print "Solving %s integrals." % (len(integrands))
+            print("Solving %s integrals." % (len(integrands)))
 
         chrt_int = zip(subcharts, integrands)
         gen_funcs = []
         for t in chrt_int:
             if verbose >= 1:
-                print "-"*79
-                print "Solving the integral for Subchart %s." % (t[0]._id)
+                print("-"*79)
+                print("Solving the integral for Subchart %s." % (t[0]._id))
                 _integral_printout(t[0])
             gen_funcs.append(_mono_chart_to_gen_func(t[0], t[1]))
 

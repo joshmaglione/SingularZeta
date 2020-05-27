@@ -1,5 +1,5 @@
 #
-#   Copyright 2019 Joshua Maglione 
+#   Copyright 2020 Joshua Maglione 
 #
 #   Distributed under MIT License
 #
@@ -7,7 +7,7 @@
 
 __version__ = 1.0
 
-print "Loading..."
+print("Loading...")
 
 # Load the global variables that the user can change.  
 from src.globalVars import _DEFAULT_INDENT as _indent
@@ -54,12 +54,12 @@ class _HiddenPrints:
 #   SingularZeta is not slow. 
 # ------------------------------------------------------------------------------
 # Start a Singular run
-print _indent + "Loading Singular."
+print(_indent + "Loading Singular.")
 from sage.all import singular as _singular
 _ = _singular.eval("1 + 1;")
 
 # See if Zeta is already imported.
-print _indent + "Loading Zeta."
+print(_indent + "Loading Zeta.")
 try:
     Zeta_ver = isinstance(Zeta.__version__, str)
 except NameError:
@@ -72,23 +72,23 @@ except NameError:
     except ImportError:
         Zeta_ver = False
     except:
-        print _indent*2 + "Something unexpected went wrong while loading Zeta."
+        print(_indent*2 + "Something unexpected went wrong while loading Zeta.")
 except:
-    print _indent*2 + "Something unexpected went wrong while looking for Zeta."
+    print(_indent*2 + "Something unexpected went wrong while looking for Zeta.")
 
 
 # Report what we know
 if Zeta_ver:
-    print _indent*2 + "Found Zeta version %s." % (Zeta.__version__)
+    print(_indent*2 + "Found Zeta version %s." % (Zeta.__version__))
 else:
-    print _indent*2 + "Could not find Zeta! Most functions unavailable."
-    print _indent*2 + "Zeta url: http://www.maths.nuigalway.ie/~rossmann/Zeta/"
+    print(_indent*2 + "Could not find Zeta! Most functions unavailable.")
+    print(_indent*2 + "Zeta url: http://www.maths.nuigalway.ie/~rossmann/Zeta/")
 del Zeta_ver
 
 
 # 'from foo import *' leaves hidden functions hidden and brings it up to 
 # foo instead of foo.src
-print _indent + "Importing functions."
+print(_indent + "Importing functions.")
 from src.atlasClass import *
 from src.atlasReport import *
 from src.chartClass import *
@@ -99,12 +99,10 @@ from src.localZFTest import *
 from src.propertyTests import *
 
 
-print _indent + "User defined default settings:"
-print _indent*2 + "Load database: %s" % (_load)
-print _indent*2 + "User input: %s" % (_user_input)
-print _indent*2 + "Variable names: %s" % ([_p, _t])
-print _indent*2 + "Verbose level: %s" % (_verbose)
+print(_indent + "User defined default settings:")
+print(_indent*2 + "Load database: %s" % (_load))
+print(_indent*2 + "User input: %s" % (_user_input))
+print(_indent*2 + "Variable names: %s" % ([_p, _t]))
+print(_indent*2 + "Verbose level: %s" % (_verbose))
 
-
-# Sage is still on python2.
-print "SingularZeta v%s loaded." % (__version__)
+print("SingularZeta v%s loaded." % (__version__))

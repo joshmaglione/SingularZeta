@@ -39,10 +39,10 @@ def _get_inter_lattice(data=None, verbose=_verbose, varbs=None, ver=2):
 
         # Print statements for the user about the intersection lattice
         if verbose >= 2:
-            print "Creating the intersection lattice."
-            print "Running the following Singular code:"
-            print "> " + str_load_lat
-            print "> " + str_set_lat
+            print("Creating the intersection lattice.")
+            print("Running the following Singular code:")
+            print("> " + str_load_lat)
+            print("> " + str_set_lat)
         
         # Get all the data from the int lattice individually
         _ = _SING.eval(str_load_lat)
@@ -60,7 +60,7 @@ def _get_inter_lattice(data=None, verbose=_verbose, varbs=None, ver=2):
         lattice = _parse_lattice_data(lat_comp, lat_divs, lat_edge, lat_vert, focus=focus, variables=varbs, ver=1)
         
         if verbose >= 2:
-            print lattice
+            print(lattice)
         
         _ = _SING.eval("kill %s;" % (r_var2))
     else:
@@ -134,16 +134,16 @@ def LoadChart(num, direc,
 
     # Print statements for the user.
     if verbose >= 2:
-        print "Loading Singular library: \n%s%s" % (_indent, pdir + 'LIB/primdec.lib')
-        print "Loading Singular library: \n%s%s" % (_indent, pdir + _CHART_LIB)
-        print "Loading Chart: \n%s%s" % (_indent, direc + _chart_num(num))
-        print "\nRunning the following Singular code:"
+        print("Loading Singular library: \n%s%s" % (_indent, pdir + 'LIB/primdec.lib'))
+        print("Loading Singular library: \n%s%s" % (_indent, pdir + _CHART_LIB))
+        print("Loading Chart: \n%s%s" % (_indent, direc + _chart_num(num)))
+        print("\nRunning the following Singular code:")
         for lib_str in load_strs:
-            print "> " + lib_str
+            print("> " + lib_str)
         if version >= 2:
-            print "> " + str_input
-        print "> " + str_load_char
-        print "> " + str_set_ring + "\n"
+            print("> " + str_input)
+        print("> " + str_load_char)
+        print("> " + str_set_ring + "\n")
 
     # A wrapper for our _parse_list function
     _parse_list_wrapped = lambda x: tuple([_parse_list(y) for y in x])
@@ -178,7 +178,7 @@ def LoadChart(num, direc,
     if sing_amb_fact[0] != "0":
         # Print info about the ambient space 
         if verbose >= 2:
-            print "Ambient space not necessarily affine."
+            print("Ambient space not necessarily affine.")
         amb_fact = _parse_list_wrapped(sing_amb_fact)
     else:
         amb_fact = tuple([0])
@@ -239,7 +239,7 @@ def LoadChart(num, direc,
     else: 
         lattice = None
         if verbose <= 1 and amb_fact[0] != 0:
-            print "Cannot compute intersection lattice due to non-trivial ambient space."
+            print("Cannot compute intersection lattice due to non-trivial ambient space.")
 
     # TODO: When the bug for chart 66 is fixed, remove this.
     if version <= 1 and 'n4_' in direc and num == 66:

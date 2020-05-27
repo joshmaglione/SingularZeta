@@ -91,7 +91,7 @@ def _guess_polynomial(P, S):
     p = _var('X')
     data = zip(X.list(), [p**k for k in range(d + 3)])
     guess = reduce(lambda x, y: x + y[0]*y[1], data, 0)
-    print guess
+    print(guess)
     if guess.degree(p) > d:
         return False, 0
     else:
@@ -169,7 +169,7 @@ def _decide_equiv(data, table, verbose=_verbose):
         return False, 0
 
     if verbose >= 2:
-        print _indent*2 + "Found %s similar systems" % (len(rel_dat))
+        print(_indent*2 + "Found %s similar systems" % (len(rel_dat)))
 
     # TODO: Improve this!
     return False, 0
@@ -185,7 +185,7 @@ def _check_saved_table(P, S, verbose=_verbose):
     # check to see if we have even used this key before
     if not key_AS in known_keys:
         if verbose >= 2:
-            print _indent*2 + "No similar system is saved in database."
+            print(_indent*2 + "No similar system is saved in database.")
         _lookup[key_AS] = []
         return False, key_AS
 
@@ -195,18 +195,18 @@ def _check_saved_table(P, S, verbose=_verbose):
 
     # decide if our system has been saved in our table
     if verbose >= 2:
-        print _indent*2 + "Checking database to find a similar system."
+        print(_indent*2 + "Checking database to find a similar system.")
     
     check, count = _decide_equiv(data, table)
 
     if check: 
         output = tuple([True, count])
         if verbose >= 2:
-            print _indent*2 + "We found a match!"
+            print(_indent*2 + "We found a match!")
     else:
         output = tuple([False, key_AS])
         if verbose >= 2:
-            print _indent*2 + "We didn't find anything."
+            print(_indent*2 + "We didn't find anything.")
     
     return output
     
@@ -221,8 +221,8 @@ def _save_to_lookup(P, S, key, count, verbose=_verbose):
     _lookup[key] = table
 
     if verbose >= 2:
-        print "Saved input to database."
-        print _lookup
+        print("Saved input to database.")
+        print(_lookup)
 
 
 # Given a system of polynomials, check to see if the support of the polynomials 
@@ -268,13 +268,13 @@ def _binom_system(S):
 # Given the variety and a label, ask the user to count the p-rational points on 
 # the variety. 
 def _ask_user(Aff, S, label):
-    print '\nCount the number of points on:\n%s defined by:' % (Aff)
+    print('\nCount the number of points on:\n%s defined by:' % (Aff))
     for f in S:
-        print _indent + '%s' % (f)
+        print(_indent + '%s' % (f))
     need_input = True
     not_poly = {_var('n'), _var('N')}
     while need_input:
-        print 'If not a polynomial in p, write N.'
+        print('If not a polynomial in p, write N.')
         exp_str = input('How many? Use %s if needed.\n' % (_p))
         if exp_str in not_poly:
             need_input = False
@@ -284,7 +284,7 @@ def _ask_user(Aff, S, label):
                 need_input = False
                 C = _parse_user_input(exp_str)
             except:
-                print 'Unknown expression.'
+                print('Unknown expression.')
                 need_input = True
     return C
 
@@ -414,7 +414,7 @@ def _rational_points(P, S,
             else:
                 # First we look up our table
                 if _verbose >= 2:
-                    print _indent*2 + "Searching through a table of order %s" % (len(_lookup))
+                    print(_indent*2 + "Searching through a table of order %s" % (len(_lookup)))
                 check, data = _check_saved_table(P, S)
                 if check: 
                     N = data
@@ -426,10 +426,10 @@ def _rational_points(P, S,
                         z_symb_curr = Z.common.symbolic
                         Z.common.symbolic = False
                         if _verbose >= 2:
-                            print _indent*2 + "Asking Tobias about \n%s%s" % (_indent*3, S)
+                            print(_indent*2 + "Asking Tobias about \n%s%s" % (_indent*3, S))
                         N = _count_pts(S)
                         if _verbose >= 2:
-                            print _indent*2 + "Done"
+                            print(_indent*2 + "Done")
                         Z.common.symbolic = z_symb_curr
                     except _CountException: 
                         # Now we ask the user or skip

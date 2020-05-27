@@ -16,10 +16,10 @@ from sage.all import var as _var
 def _integral_printout(chart, integrand=None):
     if integrand == None:
         integrand = chart.Integrand()
-    print "The corresponding integral:\n%s" % (integrand)
-    print "where S is the set of all %s satisfying:" % (list(chart.variables))
+    print("The corresponding integral:\n%s" % (integrand))
+    print("where S is the set of all %s satisfying:" % (list(chart.variables)))
     to_ineq = lambda x: "%s%s | %s\n" % (_indent, x[0], x[1])
-    print reduce(lambda x, y: x + y, map(to_ineq, chart.cone), "")
+    print(reduce(lambda x, y: x + y, map(to_ineq, chart.cone), ""))
 
 
 # Given two tuples of variables, return the map from one tuple to the other.

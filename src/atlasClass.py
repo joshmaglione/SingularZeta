@@ -44,9 +44,9 @@ class Atlas():
     # concerning the variables. 
     def __init__(self, direc, lower_triangular=True, verbose=_verbose, version=2):
         if verbose >= 1:
-            print "Loading atlas from %s" % (direc)
+            print("Loading atlas from %s" % (direc))
             if verbose >= 2:
-                print "="*79
+                print("="*79)
 
         # First we "clean up" the direc string.
         if direc[-1] != "/":
@@ -78,16 +78,16 @@ class Atlas():
         self.root = _load(1, direc, get_lat=False) # Cannot run Singular anymore
 
         if verbose >= 1:
-            print "Successfully loaded atlas."
+            print("Successfully loaded atlas.")
             if verbose >= 2:
-                print "="*79
+                print("="*79)
 
         self.integrand = _build_integrand(self.root.variables, lower_triangular)
         for C in self.charts:
             C.atlas = self
 
         if verbose >= 1:
-            print self
+            print(self)
             _integral_printout(self.root, integrand=self.integrand)
 
 

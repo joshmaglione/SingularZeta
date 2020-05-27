@@ -87,7 +87,7 @@ def _cone_mat(varbs, cone):
 # the one with the few number of variables. 
 def _get_sub(Z, subs):
     if _verbose >= 2:
-        print "Had problems with substituting. Searching for alternatives."
+        print("Had problems with substituting. Searching for alternatives.")
     keys = subs.keys()
     n = len(keys)
     rand_perms = [list(_perms(n).random_element()) for _ in range(n)]
@@ -122,7 +122,7 @@ def _get_sub(Z, subs):
     remaining = {shuff_keys[k][j] : subs[shuff_keys[k][j]] for j in range(vals[k])}
 
     if _verbose >= 2:
-        print "Most optimal option found has %s variables, down from %s." % (m, len(Z.variables()))
+        print("Most optimal option found has %s variables, down from %s." % (m, len(Z.variables())))
 
     return (funcs[k].simplify().factor()).subs(remaining).simplify().factor()
 
@@ -135,16 +135,16 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
 
     if trivial:
         if verbose >= 1:
-            print "Trivial set to integrate over."
+            print("Trivial set to integrate over.")
         return 0
 
     if verbose >= 1:
-        print "Started with the following data."
-        print "%sVariables: %s" % (_indent, list(C.variables))
-        print "%sCone data: %s\n" % (_indent, C.cone)
-        print "Cleaned it up to the following."
-        print "%sVariables: %s" % (_indent, c_varbs)
-        print "%sCone data: %s\n" % (_indent, c_cone)
+        print("Started with the following data.")
+        print("%sVariables: %s" % (_indent, list(C.variables)))
+        print("%sCone data: %s\n" % (_indent, C.cone))
+        print("Cleaned it up to the following.")
+        print("%sVariables: %s" % (_indent, c_varbs))
+        print("%sCone data: %s\n" % (_indent, c_cone))
 
     # Get the matrix of inequalities so Polyhedron can read it
     cone_mat = _cone_mat(c_varbs, c_cone)
@@ -153,8 +153,8 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
     R = _polyring(_QQ, 'Z', n)
 
     if verbose >= 2:
-        print "Running Zeta via the polyhedron:"
-        print "%s" % (_matrix(cone_mat))
+        print("Running Zeta via the polyhedron:")
+        print("%s" % (_matrix(cone_mat)))
 
     # Run Zeta
     S = _Zeta_smurf.from_polyhedron(P, R)
@@ -176,18 +176,18 @@ def _mono_chart_to_gen_func(C, I, verbose=_verbose):
         var_change = {_var('Z') : p_val(c_varbs[0])}
     
     if verbose >= 1:
-        print "Applying the following change of variables:"
+        print("Applying the following change of variables:")
         if n > 1: 
             for i in range(n):
-                print "%s%s -> %s" % (_indent, c_varbs[i], var_change[_var('Z' + str(i))])
+                print("%s%s -> %s" % (_indent, c_varbs[i], var_change[_var('Z' + str(i))]))
         else:
-            print "%s%s -> %s" % (_indent, c_varbs[0], var_change[_var('Z')])
+            print("%s%s -> %s" % (_indent, c_varbs[0], var_change[_var('Z')]))
 
     zed = I.pFactor() * (1 - p**(-1))**n * S.evaluate()
 
     if verbose >= 1:
-        print "Multiplying by:"
-        print "%s%s" % (_indent, I.pFactor() * (1 - p**(-1))**n)
+        print("Multiplying by:")
+        print("%s%s" % (_indent, I.pFactor() * (1 - p**(-1))**n))
 
     if zed == 0:
         return 0
