@@ -185,7 +185,7 @@ def _build_nonpoly_Fp_table(chrts):
         return chart_section
 
     # Get all the chart data from extraction, and flatten it down.
-    table_main = reduce(lambda x, y: x + y, map(extraction, chrts))
+    table_main = reduce(lambda x, y: x + y, map(extraction, chrts), [])
     table = table_top + table_main + table_end
     return reduce(_cat_with_space, table)
 
@@ -231,7 +231,7 @@ def _build_estimate_Fp_table(chrts):
         return chart_section
 
     # Get all the chart data from extraction, and flatten it down.
-    table_main = reduce(lambda x, y: x + y, map(extraction, chrts))
+    table_main = reduce(lambda x, y: x + y, map(extraction, chrts), [])
     table = table_top + table_main + table_end
     return reduce(_cat_with_space, table)
 
@@ -279,7 +279,7 @@ def _build_Fp_table(A):
         return chart_section
 
     # Get all the chart data from extraction, and flatten it down.
-    table_main = reduce(lambda x, y: x + y, map(extraction, A.charts))
+    table_main = reduce(lambda x, y: x + y, map(extraction, A.charts), [])
     # Put everything together and return a string.
     table = table_top + table_main + table_end
     return reduce(_cat_with_space, table)
